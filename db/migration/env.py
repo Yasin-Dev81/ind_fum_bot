@@ -12,9 +12,7 @@ from db.models import Base
 config = context.config
 config.set_main_option(
     "sqlalchemy.url",
-    os.getenv(
-        "SQLALCHEMY_DATABASE_URL",
-    ),
+    "mysql+pymysql://root:3u7kz3yLwr5Awdm4iuQTg4qOVneIW764@ga57h3.stackhero-network.com:7818/root",
 )
 
 print(

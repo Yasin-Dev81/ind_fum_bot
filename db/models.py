@@ -126,7 +126,7 @@ class Message(Base):
 class MessageFile(Base):
     __tablename__ = "message_file"
     __table_args__ = (
-        PrimaryKeyConstraint("message_id", "file_id"),
+        PrimaryKeyConstraint("message_id", "file_id", name="message_file_pk"),
         ForeignKeyConstraint(["message_id"], ["message.id"], ondelete="CASCADE"),
     )
     id: Mapped[int]
