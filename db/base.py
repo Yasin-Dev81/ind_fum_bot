@@ -2,6 +2,9 @@ from config import SQLALCHEMY_DATABASE_URL
 from sqlalchemy import create_engine, exc
 from sqlalchemy.orm import sessionmaker
 from contextlib import contextmanager
+from sqlalchemy import create_engine
+import os
+
 
 # URL of the certificate
 cert_url = "https://letsencrypt.org/certs/isrgrootx1.pem"
