@@ -13,7 +13,6 @@ if IS_SQLITE:
         pool_pre_ping=True,
     )
 else:
-    down_cert()
     engine = create_engine(
         SQLALCHEMY_DATABASE_URL,
         pool_size=10,
