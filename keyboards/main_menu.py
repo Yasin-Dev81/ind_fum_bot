@@ -1,56 +1,62 @@
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 
 
-def get_main_menu_keyboard(is_used_gift: bool = True) -> ReplyKeyboardMarkup:
-    kb = [
-        [
-            KeyboardButton(text="خرید کانفیگ 🛍"),
-        ],
-        [
-            KeyboardButton(text="کانفیگ‌های من 🗂"),
-            KeyboardButton(text="لینک رفرال 🔗"),
-            # KeyboardButton(text="فاکتورهای من"),
-        ],
-        [
-            KeyboardButton(text="شارژ کیف پول ⚡️"),
-        ],
-        [
-            KeyboardButton(text="اطلاعات من ℹ️"),
-            KeyboardButton(text="کیف پول 💵"),
-        ],
-        [
-            KeyboardButton(text="قوانین 📝"),
-        ],
-    ]
-
-    if not is_used_gift:
-        kb.insert(
-            0,
+def get_main_menu_keyboard(type_value: int) -> ReplyKeyboardMarkup:
+    if type_value == 0:
+        kb = [
             [
-                KeyboardButton(text="دریافت کانفیگ هدیه 🎁"),
+                KeyboardButton(text="پیام‌های خوانده نشده 📥"),
             ],
-        )
-
-    return ReplyKeyboardMarkup(keyboard=kb, resize_keyboard=True)
-
-
-def get_main_menu_keyboard_admin() -> ReplyKeyboardMarkup:
-    kb = [
-        [
-            KeyboardButton(text="خرید‌های امروز"),
-        ],
-        [
-            KeyboardButton(text="ساخت کدتخفیف"),
-        ],
-        [
-            KeyboardButton(text="یوزرها"),
-            KeyboardButton(text="فاکتورها"),
-        ],
-        [KeyboardButton(text="نوتیف")],
-        [KeyboardButton(text="سرچ")],
-        [
-            KeyboardButton(text="مدیا"),
-        ],
-    ]
+            [
+                KeyboardButton(text="تمامی پیام‌ها 📥"),
+            ],
+            [
+                KeyboardButton(text="یوزرها"),
+            ],
+            [
+                KeyboardButton(text="ارسال نوتیف"),
+                KeyboardButton(text="سرچ"),
+            ],
+            [
+                KeyboardButton(text="اطلاعات من ℹ️"),
+                KeyboardButton(text="قوانین 📝"),
+            ],
+        ]
+    elif type_value == 1:
+        kb = [
+            [
+                KeyboardButton(text="پیام‌های خوانده نشده 📥"),
+            ],
+            [
+                KeyboardButton(text="تمامی پیام‌ها 📥"),
+            ],
+            [
+                KeyboardButton(text="ارسال نوتیف"),
+                KeyboardButton(text="سرچ"),
+            ],
+            [
+                KeyboardButton(text="اطلاعات من ℹ️"),
+                KeyboardButton(text="قوانین 📝"),
+            ],
+        ]
+    else:
+        kb = [
+            [
+                KeyboardButton(text="ارتباط با مدیر گروه 🚀"),
+            ],
+            [
+                KeyboardButton(text="پیام‌های خوانده نشده 📥"),
+            ],
+            [
+                KeyboardButton(text="تمامی پیام‌ها 📥"),
+            ],
+            [
+                KeyboardButton(text="اطلاعات من ℹ️"),
+                KeyboardButton(text="قوانین 📝"),
+            ],
+            [
+                KeyboardButton(text="ارتباط با توسعه دهنده ⚠️"),
+            ],
+        ]
 
     return ReplyKeyboardMarkup(keyboard=kb, resize_keyboard=True)

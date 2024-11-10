@@ -1,9 +1,9 @@
-SQLAlchemy==2.0.32
+SQLAlchemy==2.0.36
 python-decouple==3.8
 pytz==2024.1
 python-dotenv==1.0.1
 aiogram==3.13.1
-alembic==1.13.2
+alembic==1.14.0
 PyMySQL==1.1.1
 cryptography==43.0.0
 aiostep==0.1.1

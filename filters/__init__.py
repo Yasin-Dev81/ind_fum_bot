@@ -1,8 +1,6 @@
-from .admin import IsAdmin
-from .sub import IsJoined
+from .user_level import LimitLevel
 
 
 __all__ = (
-    "IsAdmin",
-    "IsJoined",
+    "LimitLevel",
 )

@@ -39,8 +39,8 @@ async def on_startup(app: web.Application):
 
 
 def setup_middlewares():
-    glv.dp.message.middleware(DBCheck())
-    glv.dp.callback_query.middleware(DBCheck())
+    glv.dp.message.outer_middleware(DBCheck())
+    glv.dp.callback_query.outer_middleware(DBCheck())
     glv.dp.message.outer_middleware(Listen())
 
 

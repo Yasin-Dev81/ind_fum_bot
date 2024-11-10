@@ -17,7 +17,8 @@ class DBCheck(BaseMiddleware):
         if event_from_user:
             user = user_db.create(
                 event_from_user.id,
-                name=" ".join([event_from_user.first_name or "", event_from_user.last_name or ""]),
+                first_name=event_from_user.first_name,
+                last_name=event_from_user.last_name,
                 username=event_from_user.username or None,
             )
             data["user"] = user

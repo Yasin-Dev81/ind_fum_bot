@@ -1,8 +1,8 @@
-from .callbacks import register_admin_callbacks
-from .messages import register_messages_admin
+from .callbacks import register_callbacks as admin_register_callbacks
+from .messages import register_messages as admin_register_messages
 
 
 __all__ = (
-    "register_admin_callbacks",
-    "register_messages_admin",
+    "admin_register_callbacks",
+    "admin_register_messages",
 )
