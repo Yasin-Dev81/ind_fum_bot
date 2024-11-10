@@ -2,7 +2,7 @@ from config import SQLALCHEMY_DATABASE_URL
 from sqlalchemy import create_engine, exc
 from sqlalchemy.orm import sessionmaker
 from contextlib import contextmanager
-from sqlalchemy import create_engine
+import requests
 import os
 
 
