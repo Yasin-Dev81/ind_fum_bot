@@ -10,6 +10,7 @@ from keyboards import (
 )
 from db.models import UserType, User as UserModel
 from filters import LimitLevel
+from config import USER_LEVEL
 
 
 router = Router(name="messages-router")
@@ -60,7 +61,7 @@ async def info(message: Message, user: UserModel):
     await message.answer(
         (
             f"🆔 #{user.id}\n"
-            f"▫️ لول: {user.type} : {user.type.value}\n"
+            f"▫️ لول: {USER_LEVEL[user.type.value]}\n"
             f"◾️ نام مستعار: {user.nick_name or 'تعریف نشده!'}\n"
             f"▫️ زمان استارت بات: {user.datetime_created}"
         ),

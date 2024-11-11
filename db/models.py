@@ -8,6 +8,7 @@ import enum
 
 
 String128 = NewType("String128", str)
+String60 = NewType("String60", str)
 String32 = NewType("String32", str)
 String8 = NewType("String8", str)
 BigInteger = NewType("BigInteger", int)
@@ -15,9 +16,10 @@ CaptionText = NewType("CaptionText", str)
 
 
 class UserType(enum.Enum):
-    ADMIN = 0
-    SUPERUSER = 1
-    USER = 2
+    DEVELOPER = 0
+    ADMIN = 1
+    SUPERUSER = 2
+    USER = 3
 
 
 class MediaType(enum.Enum):
@@ -32,6 +34,7 @@ class MediaType(enum.Enum):
 class Base(DeclarativeBase):
     type_annotation_map = {
         String128: types.String(length=128),
+        String60: types.String(length=60),
         String32: types.String(length=32),
         datetime: types.DateTime(timezone=True),
         UserType: Enum(UserType, default=UserType.USER),
@@ -101,7 +104,9 @@ class Message(Base):
     receiver_id: Mapped[BigInteger]
 
     seen: Mapped[bool] = mapped_column(default=False)
+    done: Mapped[bool] = mapped_column(default=False)
 
+    title: Mapped[String60]
     caption: Mapped[CaptionText]
 
     datetime_created: Mapped[datetime] = mapped_column(
@@ -117,10 +122,13 @@ class Message(Base):
     )
 
     def __repr__(self):
-        return f"msg | {self.sender_id} : {self.receiver_id}"
+        return f"{self.title} from {self.sender_id}"
 
     def __str__(self):
-        return f"msg | {self.sender_id} : {self.receiver_id}"
+        return (
+            f"<b>{self.title}</b>\n"
+            f"<blockquote expandable>{self.caption}</blockquote>"
+        )
 
 
 class MessageFile(Base):
@@ -139,13 +147,30 @@ class MessageFile(Base):
 class Reply(Base):
     __tablename__ = "reply"
     __table_args__ = (
-        PrimaryKeyConstraint("reply_in", "reply_to"),
+        PrimaryKeyConstraint("reply_in", "reply_to", name="reply_pk"),
         ForeignKeyConstraint(["reply_in"], ["message.id"], ondelete="CASCADE"),
         ForeignKeyConstraint(["reply_to"], ["message.id"], ondelete="CASCADE"),
     )
 
     reply_in: Mapped[int]
     reply_to: Mapped[int]
+
+    def __repr__(self):
+        return f"reply | {self.reply_in} : {self.reply_to}"
+
+    def __str__(self):
+        return f"reply | {self.reply_in} : {self.reply_to}"
+
+
+class Star(Base):
+    __tablename__ = "star"
+    __table_args__ = (
+        PrimaryKeyConstraint("message_id", "star", name="star_pk"),
+        ForeignKeyConstraint(["message_id"], ["message.id"], ondelete="CASCADE"),
+    )
+
+    message_id: Mapped[int]
+    star: Mapped[int]
 
     def __repr__(self):
         return f"reply | {self.reply_in} : {self.reply_to}"

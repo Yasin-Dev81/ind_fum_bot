@@ -11,13 +11,13 @@ from db.models import (
 )
 
 
-def create(text: str, for_superuser: bool = True, **kwargs) -> User:
+def create(text: str, for_admin: bool = True, **kwargs) -> User:
     with get_session() as session:
         receiver = None
-        if for_superuser:
-            receiver = session.query(User).filter_by(type=UserType.SUPERUSER).first()
-        else:
+        if for_admin:
             receiver = session.query(User).filter_by(type=UserType.ADMIN).first()
+        else:
+            receiver = session.query(User).filter_by(type=UserType.DEVELOPER).first()
 
         msg = Message(
             sender_id=kwargs["sender_id"],

@@ -7,12 +7,12 @@ import asyncio
 from utils import MsgListCB, MsgCB
 from keyboards import get_msg_list_inline_keyboard, get_msg_inline_keyboard
 from db.methods import msg_db, user_db
-from db.models import User as UserModel, UserType
-from filters import LimitLevel
+# from db.models import UserType
+# from filters import LimitLevel
 
 
 router = Router(name="callbacks-router")
-router.callback_query.filter(LimitLevel(type=UserType.USER))
+# router.callback_query.filter(LimitLevel(type=UserType.USER))
 
 
 @router.callback_query(MsgListCB.filter())
@@ -36,8 +36,9 @@ async def list_msg(callback: CallbackQuery, callback_data: MsgListCB):
 
 
 @router.callback_query(MsgCB.filter(F.action == "read"))
-async def msg(callback: CallbackQuery, callback_data: MsgCB, user: UserModel):
+async def msg(callback: CallbackQuery, callback_data: MsgCB):
     msg = msg_db.msg(callback_data.pk)
+    user = user_db.read(callback.from_user.id)
     await callback.message.answer(
         (
             f"🆔 #{callback_data.pk}\n"
@@ -51,7 +52,7 @@ async def msg(callback: CallbackQuery, callback_data: MsgCB, user: UserModel):
 
 
 @router.callback_query(MsgCB.filter(F.action == "reply"))
-async def reply(callback: CallbackQuery, callback_data: MsgCB, user: UserModel):
+async def reply(callback: CallbackQuery, callback_data: MsgCB):
     await callback.answer("لطفا پیام خود را ارسال کنید: (فقط متن)", show_alert=True)
     try:
         response: Message = await aiostep.wait_for(callback.from_user.id, timeout=500)
@@ -78,14 +79,12 @@ async def reply(callback: CallbackQuery, callback_data: MsgCB, user: UserModel):
 
 
 @router.callback_query(F.data == "set_notif_file_id")
-async def set_notif_file_id(
-    callback: CallbackQuery, user: UserModel
-):
+async def set_notif_file_id(callback: CallbackQuery):
     await callback.answer("لطفا ویس خود را ارسال کنید:", show_alert=True)
     try:
         response: Message = await aiostep.wait_for(callback.from_user.id, timeout=500)
         if response.voice:
-            user_db.set_notif_file_id(user.id, response.voice.file_id)
+            user_db.set_notif_file_id(callback.from_user.id, response.voice.file_id)
 
             await callback.message.answer("ویس شما با موفقیت ذخیره شد.")
         else:

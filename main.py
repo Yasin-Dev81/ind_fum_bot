@@ -18,7 +18,6 @@ from config import (
     BOT_TOKEN,
     WEBHOOK_URL,
     PORT,
-    FORCE_POLLING,
     TIME_ZONE,
 )
 import glv
@@ -48,22 +47,18 @@ async def main():
     setup_routers(glv.dp)
     setup_middlewares()
 
-    if FORCE_POLLING:
-        await glv.bot.delete_webhook()
-        await glv.dp.start_polling(glv.bot)
-    else:
-        glv.dp.startup.register(on_startup)
+    glv.dp.startup.register(on_startup)
 
-        setup_routes(app)
+    setup_routes(app)
 
-        webhook_requests_handler = SimpleRequestHandler(
-            dispatcher=glv.dp,
-            bot=glv.bot,
-        )
-        webhook_requests_handler.register(app, path="/webhook")
+    webhook_requests_handler = SimpleRequestHandler(
+        dispatcher=glv.dp,
+        bot=glv.bot,
+    )
+    webhook_requests_handler.register(app, path="/webhook")
 
-        setup_application(app, glv.dp, bot=glv.bot)
-        await web._run_app(app, host="0.0.0.0", port=PORT)
+    setup_application(app, glv.dp, bot=glv.bot)
+    await web._run_app(app, host="0.0.0.0", port=PORT)
 
 
 if __name__ == "__main__":
