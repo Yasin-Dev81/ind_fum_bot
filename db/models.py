@@ -1,7 +1,8 @@
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.schema import PrimaryKeyConstraint, ForeignKeyConstraint
 from sqlalchemy.sql import func
-from sqlalchemy import types, Enum
+from sqlalchemy import types, Enum, case
 from typing import NewType
 from datetime import datetime
 import enum
@@ -73,11 +74,29 @@ class User(Base):
     def __str__(self):
         return f"user | {self.name} | {self.type.value}"
 
-    @property
-    def name(self):
+    @hybrid_property
+    def name(self) -> str:
         if self.nick_name:
             return self.nick_name
-        return " ".join([self.first_name or "", self.last_name or ""])
+        full_name = f"{self.first_name or ''} {self.last_name or ''}".strip()
+        return full_name if full_name else (self.username or "Unknown")
+
+    @name.expression
+    def name(cls):
+        return case(
+            (cls.nick_name != None, cls.nick_name),  # noqa: E711
+            else_=func.trim(
+                func.concat(
+                    func.coalesce(cls.first_name, ""),
+                    " ",
+                    func.coalesce(cls.last_name, ""),
+                )
+            ),
+        )
+
+    @hybrid_property
+    def is_superuser(self) -> str:
+        return self.type == UserType.SUPERUSER
 
 
 class UserNotif(Base):
@@ -106,7 +125,7 @@ class Message(Base):
     seen: Mapped[bool] = mapped_column(default=False)
     done: Mapped[bool] = mapped_column(default=False)
 
-    title: Mapped[String60]
+    title: Mapped[String60 | None]
     caption: Mapped[CaptionText]
 
     datetime_created: Mapped[datetime] = mapped_column(
@@ -140,7 +159,7 @@ class MessageFile(Base):
     id: Mapped[int]
 
     message_id: Mapped[int]
-    file_id: Mapped[String128 | None]
+    file_id: Mapped[String128]
     media_type: Mapped[MediaType]
 
 

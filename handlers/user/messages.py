@@ -1,6 +1,7 @@
 from aiogram import Router, Dispatcher, F
 from aiogram.types import Message
 
+import re
 import aiostep
 
 from db.methods import msg_db
@@ -19,16 +20,22 @@ router.message.filter(LimitLevel(type=UserType.USER))
 
 @router.message(F.text == "ارتباط با مدیر گروه 🚀")
 async def send_superuser_msg(message: Message):
-    await message.answer("لطفا پیام خود را ارسال کنید: (فقط متن)")
+    await message.answer("لطفا پیام خود را ارسال کنید: (فقط متن)\nدر خط اول عنوان (حداکثر ۶۰ کارکتر) و در باقی خطوط پیام را بنویسید.")
     try:
         response: Message = await aiostep.wait_for(message.from_user.id, timeout=500)
         if response.text:
-            msg_db.create(
-                text=response.text,
-                sender_id=response.from_user.id,
-            )
+            match = re.match(r"^(^.{1,60})\n([\s\S]*)$", response.text)
+            if match:
+                msg_db.create(
+                    title=match.group(1),
+                    text=match.group(2),
+                    sender_id=response.from_user.id,
+                )
 
-            await message.answer("پیام شما با موفقیت ثبت شد.")
+                await message.answer("پیام شما با موفقیت ثبت شد.")
+            else:
+                await message.answer("این ساختار متن مورد قبول نیست! (دوباره روی دکمه‌ی پاسخ بزنید)")
+
         else:
             await message.answer("صرفا متن ارسال کنید! (دوباره روی دکمه بزنید)")
     except TimeoutError:
@@ -47,7 +54,7 @@ async def unread_msg(message: Message):
     )
 
 
-@router.message(F.text == "تمامی پیام‌ها 📥")
+@router.message(F.text == "تمامی پیام‌ها ↙️")
 async def all_msg(message: Message):
     msgs = msg_db.all_msgs(message.from_user.id)
     await message.answer(
@@ -79,14 +86,20 @@ async def send_admin_msg(message: Message):
     await message.answer("لطفا پیام خود را ارسال کنید: (فقط متن)")
     try:
         response: Message = await aiostep.wait_for(message.from_user.id, timeout=500)
-        if response.text:
-            msg_db.create(
-                text=response.text,
-                sender_id=response.from_user.id,
-                for_superuser=False,
-            )
 
-            await message.answer("پیام شما با موفقیت ثبت شد.")
+        if response.text:
+            match = re.match(r"^(^.{1,60})\n([\s\S]*)$", response.text)
+            if match:
+                msg_db.create(
+                    title=match.group(1),
+                    text=match.group(2),
+                    sender_id=response.from_user.id,
+                    for_admin=False,
+                )
+
+                await message.answer("پیام شما با موفقیت ثبت شد.")
+            else:
+                await message.answer("این ساختار متن مورد قبول نیست! (دوباره روی دکمه‌ی پاسخ بزنید)")
         else:
             await message.answer("صرفا متن ارسال کنید! (دوباره روی دکمه بزنید)")
     except TimeoutError:

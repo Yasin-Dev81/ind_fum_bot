@@ -1,12 +1,15 @@
 from aiogram import Router, Dispatcher, F
 from aiogram.types import CallbackQuery, Message
 from html import escape
+from persiantools.jdatetime import JalaliDateTime
 import aiostep
 import asyncio
+import re
 
 from utils import MsgListCB, MsgCB
 from keyboards import get_msg_list_inline_keyboard, get_msg_inline_keyboard
 from db.methods import msg_db, user_db
+from config import DATE_TIME_FMT
 # from db.models import UserType
 # from filters import LimitLevel
 
@@ -41,11 +44,24 @@ async def msg(callback: CallbackQuery, callback_data: MsgCB):
     user = user_db.read(callback.from_user.id)
     await callback.message.answer(
         (
-            f"🆔 #{callback_data.pk}\n"
-            f"👤 #{msg.sender_id}\n"
-            f"💬 پیام:\n{escape(msg.caption)}"
+            f"📌 {escape(msg.title) or 'بدون عنوان'}\n"
+            f"<blockquote expandable>{escape(msg.caption)}</blockquote>"
         ),
-        reply_markup=get_msg_inline_keyboard(callback_data.pk, user.type),
+    )
+    await callback.message.answer(
+        (
+            f"🆔 #{callback_data.pk}\n"
+            f"⚡️ superuser: {'✅'if msg.is_superuser else '❎'}\n"
+            f"👤 name: <b>{escape(msg.sender_name)}</b>\n"
+            f"📅 <i>{JalaliDateTime(msg.datetime_created).strftime(DATE_TIME_FMT, locale='fa')}</i>\n"
+            f"{(msg.star or 0) * '⭐️'}"
+        ),
+        reply_markup=get_msg_inline_keyboard(
+            callback_data.pk,
+            user.type,
+            msg.done,
+            not bool(msg.star or 0),
+        ),
     )
     await callback.message.delete()
     asyncio.create_task(msg_db.seen(callback_data.pk))
@@ -53,17 +69,29 @@ async def msg(callback: CallbackQuery, callback_data: MsgCB):
 
 @router.callback_query(MsgCB.filter(F.action == "reply"))
 async def reply(callback: CallbackQuery, callback_data: MsgCB):
-    await callback.answer("لطفا پیام خود را ارسال کنید: (فقط متن)", show_alert=True)
+    await callback.message.answer(
+        "لطفا پیام خود را ارسال کنید: (فقط متن)", show_alert=True
+    )
     try:
         response: Message = await aiostep.wait_for(callback.from_user.id, timeout=500)
         if response.text:
-            msg_db.reply(
-                text=response.text,
-                sender_id=response.from_user.id,
-                msg_id=callback_data.pk,
-            )
-
-            await callback.message.answer("پیام شما با موفقیت ثبت شد.")
+            match = re.match(r"^(^.{1,60})\n([\s\S]*)$", response.text)
+            if match:
+                msg_db.reply(
+                    title=match.group(1),
+                    text=match.group(2),
+                    sender_id=response.from_user.id,
+                    msg_id=callback_data.pk,
+                )
+                await callback.message.answer("پیام شما با موفقیت ثبت شد.")
+            else:
+                msg_db.reply(
+                    title=None,
+                    text=response.text,
+                    sender_id=response.from_user.id,
+                    msg_id=callback_data.pk,
+                )
+                await callback.message.answer("پیام شما با موفقیت ثبت شد.")
         else:
             await callback.message.answer(
                 "صرفا متن ارسال کنید! (دوباره روی دکمه‌ی پاسخ بزنید)"

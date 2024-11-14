@@ -8,7 +8,7 @@ def get_main_menu_keyboard(type_value: int) -> ReplyKeyboardMarkup:
                 KeyboardButton(text="پیام‌های خوانده نشده 📥"),
             ],
             [
-                KeyboardButton(text="تمامی پیام‌ها 📥"),
+                KeyboardButton(text="تمامی پیام‌ها ↙️"),
             ],
             [
                 KeyboardButton(text="یوزرها"),
@@ -28,7 +28,10 @@ def get_main_menu_keyboard(type_value: int) -> ReplyKeyboardMarkup:
                 KeyboardButton(text="پیام‌های خوانده نشده 📥"),
             ],
             [
-                KeyboardButton(text="تمامی پیام‌ها 📥"),
+                KeyboardButton(text="موضوعات انجام نشده ❎"),
+            ],
+            [
+                KeyboardButton(text="تمامی پیام‌ها ↙️"),
             ],
             [
                 KeyboardButton(text="ارسال نوتیف"),
@@ -48,7 +51,7 @@ def get_main_menu_keyboard(type_value: int) -> ReplyKeyboardMarkup:
                 KeyboardButton(text="پیام‌های خوانده نشده 📥"),
             ],
             [
-                KeyboardButton(text="تمامی پیام‌ها 📥"),
+                KeyboardButton(text="تمامی پیام‌ها ↙️"),
             ],
             [
                 KeyboardButton(text="اطلاعات من ℹ️"),

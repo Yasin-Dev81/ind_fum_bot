@@ -1,8 +1,8 @@
 from aiogram import Router, Dispatcher, F
 from aiogram.types import Message
 
-from db.methods import user_db
-from keyboards import get_user_list_inline_keyboard
+from db.methods import user_db, msg_db
+from keyboards import get_user_list_inline_keyboard, get_msg_list_inline_keyboard
 from db.models import UserType
 from filters import LimitLevel
 
@@ -16,6 +16,14 @@ async def users(message: Message):
     users = user_db.read_alls()
     await message.answer(
         "یک یوزر انتخاب کنید:", reply_markup=get_user_list_inline_keyboard(users, 0)
+    )
+
+@router.message(F.text == "موضوعات انجام نشده ❎")
+async def unread_msg(message: Message):
+    msgs = msg_db.udone_msgs(message.from_user.id)
+    await message.answer(
+        "یک پیام انتخاب کنید:",
+        reply_markup=get_msg_list_inline_keyboard(msgs, page=0, type="udone"),
     )
 
 

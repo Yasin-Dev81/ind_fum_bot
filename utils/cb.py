@@ -6,6 +6,11 @@ class MsgCB(CallbackData, prefix="msg"):
     action: str = "read"
 
 
+class StarCB(CallbackData, prefix="star"):
+    pk: int
+    count: int
+
+
 class MsgListCB(CallbackData, prefix="list_msg"):
     page: int
     type: str = "unread"

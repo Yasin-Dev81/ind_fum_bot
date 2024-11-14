@@ -8,10 +8,11 @@ from db.models import (
     UserType,
     Message,
     UserNotif,
+    Star,
 )
 
 
-def create(text: str, for_admin: bool = True, **kwargs) -> User:
+def create(title: str, text: str, for_admin: bool = True, **kwargs) -> User:
     with get_session() as session:
         receiver = None
         if for_admin:
@@ -23,11 +24,12 @@ def create(text: str, for_admin: bool = True, **kwargs) -> User:
             sender_id=kwargs["sender_id"],
             receiver_id=receiver.id,
             caption=text,
+            title=title,
         )
         session.add(msg)
 
-        if kwargs.get("file_id"):
-            pass
+        # if kwargs.get("file_id"):
+        #     pass
 
         session.commit()
 
@@ -47,7 +49,7 @@ def create(text: str, for_admin: bool = True, **kwargs) -> User:
         return msg
 
 
-def reply(text: str, msg_id: int, **kwargs) -> User:
+def reply(title: str | None, text: str, msg_id: int, **kwargs) -> User:
     with get_session() as session:
         r_msg = session.get(Message, msg_id)
 
@@ -57,12 +59,13 @@ def reply(text: str, msg_id: int, **kwargs) -> User:
         msg = Message(
             sender_id=kwargs["sender_id"],
             receiver_id=r_msg.sender_id,
+            title=title,
             caption=text,
         )
         session.add(msg)
 
-        if kwargs.get("file_id"):
-            pass
+        # if kwargs.get("file_id"):
+        #     pass
 
         session.commit()
 
@@ -83,17 +86,63 @@ def reply(text: str, msg_id: int, **kwargs) -> User:
 
 def uread_msgs(user_id: int) -> list[Message]:
     with get_session() as session:
-        return session.query(Message).filter_by(receiver_id=user_id, seen=False).all()
+        # return session.query(Message).filter_by(receiver_id=user_id, seen=False).all()
+        return (
+            session.query(Message)
+            .join(User, User.id == Message.sender_id)
+            .filter(Message.receiver_id == user_id, Message.seen == False)  # noqa: E712
+            .order_by(User.type != UserType.SUPERUSER, Message.datetime_created)
+            .all()
+        )
+
+
+def udone_msgs(user_id: int) -> list[Message]:
+    with get_session() as session:
+        # return session.query(Message).filter_by(receiver_id=user_id, done=False).all()
+        return (
+            session.query(Message)
+            .join(User, User.id == Message.sender_id)
+            .filter(Message.receiver_id == user_id, Message.done == False)  # noqa: E712
+            .order_by(User.type != UserType.SUPERUSER, Message.datetime_created)
+            .all()
+        )
 
 
 def all_msgs(user_id: int) -> list[Message]:
     with get_session() as session:
-        return session.query(Message).filter_by(receiver_id=user_id).all()
+        # return session.query(Message).filter_by(receiver_id=user_id).all()
+        return (
+            session.query(Message)
+            .join(User, User.id == Message.sender_id)
+            .filter(Message.receiver_id == user_id)  # noqa: E712
+            .order_by(User.type != UserType.SUPERUSER, Message.datetime_created)
+            .all()
+        )
 
 
 def msg(pk: int) -> Message:
     with get_session() as session:
-        return session.query(Message).get(pk)
+        # return session.query(Message).get(pk)
+        query = (
+            session.query(
+                Message.id,
+                Message.title,
+                Message.caption,
+                Message.sender_id,
+                Message.receiver_id,
+                Message.done,
+                Message.datetime_created,
+                Message.datetime_modified,
+                User.name.label("sender_name"),
+                User.is_superuser,
+                Star.star,
+            )
+            .join(User, User.id == Message.sender_id)
+            .outerjoin(Star, Star.message_id == Message.id)
+            .filter(Message.id == pk)
+            .first()
+        )
+        return query
 
 
 async def seen(pk: int) -> Message:
@@ -110,6 +159,33 @@ async def seen(pk: int) -> Message:
     return await asyncio.to_thread(mark_seen)
 
 
+def done(pk: int) -> Message:
+    with get_session() as session:
+        msg = session.get(Message, pk)
+        if not msg:
+            raise ValueError(f"Message with id {pk} not found.")
+
+        msg.done = True
+        session.commit()
+        return msg
+
+
 def user_media_notif(pk: int) -> UserNotif:
     with get_session() as session:
         return session.query(UserNotif).filter_by(user_id=pk).first()
+
+
+def set_star(msg_id: int, count: int) -> str:
+    with get_session() as session:
+        r_msg = session.get(Message, msg_id)
+
+        if not r_msg:
+            raise ValueError(f"Message with id {msg_id} not found.")
+
+        star = Star(
+            message_id=msg_id,
+            star=count,
+        )
+        session.add(star)
+        session.commit()
+        return count

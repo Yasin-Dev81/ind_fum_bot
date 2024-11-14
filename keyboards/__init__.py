@@ -4,6 +4,7 @@ from .msg import (
     get_msg_list_inline_keyboard,
     get_msg_inline_keyboard,
     get_notif_inline_keyboard,
+    get_star_inline_keyboard,
 )
 from .user import (
     get_user_inline_keyboard,
@@ -21,4 +22,5 @@ __all__ = (
     "get_user_list_inline_keyboard",
     "get_notif_user_inline_keyboard",
     "get_set_notif_file_id_inline_keyboard",
+    "get_star_inline_keyboard",
 )

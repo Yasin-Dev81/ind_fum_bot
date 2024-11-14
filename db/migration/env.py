@@ -12,14 +12,11 @@ from db.models import Base
 config = context.config
 config.set_main_option(
     "sqlalchemy.url",
-    "mysql+pymysql://root:3u7kz3yLwr5Awdm4iuQTg4qOVneIW764@ga57h3.stackhero-network.com:7818/root",
-)
-
-print(
     os.getenv(
         "SQLALCHEMY_DATABASE_URL",
-    )
+    ),
 )
+
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
 if config.config_file_name is not None:
