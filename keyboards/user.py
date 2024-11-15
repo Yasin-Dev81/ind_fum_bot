@@ -51,11 +51,7 @@ def get_user_inline_keyboard(pk: int, type_value: int) -> InlineKeyboardMarkup:
             InlineKeyboardButton(
                 text="بلاک کردن ❌",
                 callback_data=UserCB(pk=pk, action="block").pack(),
-            ),
-            InlineKeyboardButton(
-                text="حذف پیام 🗑",
-                callback_data=UserCB(pk=pk, action="delete").pack(),
-            ),
+            )
         ],
         [
             InlineKeyboardButton(
