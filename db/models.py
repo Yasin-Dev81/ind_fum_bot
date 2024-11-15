@@ -3,6 +3,7 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.schema import PrimaryKeyConstraint, ForeignKeyConstraint
 from sqlalchemy.sql import func
 from sqlalchemy import types, Enum, case
+from html import escape
 from typing import NewType
 from datetime import datetime
 import enum
@@ -84,7 +85,7 @@ class User(Base):
     @name.expression
     def name(cls):
         return case(
-            (cls.nick_name != None, cls.nick_name),  # noqa: E711
+            (cls.nick_name.is_not(None), cls.nick_name),  # noqa: E711
             else_=func.trim(
                 func.concat(
                     func.coalesce(cls.first_name, ""),
@@ -147,6 +148,23 @@ class Message(Base):
         return (
             f"<b>{self.title}</b>\n"
             f"<blockquote expandable>{self.caption}</blockquote>"
+        )
+
+    @hybrid_property
+    def tel_msg(self) -> str:
+        return (
+            f"📌 {escape(self.title or 'بدون عنوان')}\n"
+            f"<blockquote expandable>{escape(self.caption)}</blockquote>"
+        )
+
+    @tel_msg.expression
+    def tel_msg(cls):
+        return func.concat(
+            "📌 ",
+            func.coalesce(cls.title, "بدون عنوان"),
+            "\n<blockquote expandable>",
+            cls.caption,
+            "</blockquote>",
         )
 
 

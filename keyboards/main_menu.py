@@ -2,46 +2,37 @@ from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 
 
 def get_main_menu_keyboard(type_value: int) -> ReplyKeyboardMarkup:
+    kb = [
+        [
+            KeyboardButton(text="پیام‌های خوانده نشده 📥"),
+        ],
+        [
+            KeyboardButton(text="تمامی پیام‌ها ↙️"),
+        ],
+        [
+            KeyboardButton(text="یوزرها 👥"),
+        ],
+        [
+            KeyboardButton(text="ارسال نوتیف 🔊"),
+            KeyboardButton(text="سرچ 🔎"),
+        ],
+        [
+            KeyboardButton(text="گزارش عملکرد 📈"),
+        ],
+        [
+            KeyboardButton(text="اطلاعات من ℹ️"),
+            KeyboardButton(text="قوانین 📝"),
+        ],
+    ]
     if type_value == 0:
-        kb = [
-            [
-                KeyboardButton(text="پیام‌های خوانده نشده 📥"),
-            ],
-            [
-                KeyboardButton(text="تمامی پیام‌ها ↙️"),
-            ],
-            [
-                KeyboardButton(text="یوزرها"),
-            ],
-            [
-                KeyboardButton(text="ارسال نوتیف"),
-                KeyboardButton(text="سرچ"),
-            ],
-            [
-                KeyboardButton(text="اطلاعات من ℹ️"),
-                KeyboardButton(text="قوانین 📝"),
-            ],
-        ]
+        pass
     elif type_value == 1:
-        kb = [
-            [
-                KeyboardButton(text="پیام‌های خوانده نشده 📥"),
-            ],
+        kb.insert(
+            1,
             [
                 KeyboardButton(text="موضوعات انجام نشده ❎"),
             ],
-            [
-                KeyboardButton(text="تمامی پیام‌ها ↙️"),
-            ],
-            [
-                KeyboardButton(text="ارسال نوتیف"),
-                KeyboardButton(text="سرچ"),
-            ],
-            [
-                KeyboardButton(text="اطلاعات من ℹ️"),
-                KeyboardButton(text="قوانین 📝"),
-            ],
-        ]
+        )
     else:
         kb = [
             [

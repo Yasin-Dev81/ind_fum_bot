@@ -4,6 +4,7 @@ from aiogram.filters.callback_data import CallbackData
 class MsgCB(CallbackData, prefix="msg"):
     pk: int
     action: str = "read"
+    before_type: str = "all"
 
 
 class StarCB(CallbackData, prefix="star"):

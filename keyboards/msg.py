@@ -17,8 +17,8 @@ def get_msg_list_inline_keyboard(
     for i in paginated_msgs:
         builder.row(
             InlineKeyboardButton(
-                text=f"{i.title}",
-                callback_data=MsgCB(pk=i.id).pack(),
+                text=f"{i.title or 'بدون عنوان'}",
+                callback_data=MsgCB(pk=i.id, before_type=type).pack(),
             )
         )
 
@@ -62,7 +62,7 @@ def add_buttons(kb, row, buttons, pk):
 
 
 def get_msg_inline_keyboard(
-    pk: int, user_type: UserType, done: bool = False, need_star: bool = False
+    pk: int, user_type: UserType, done: bool = False, need_star: bool = False, before_type: str = "all"
 ) -> InlineKeyboardMarkup:
     kb = [
         [
@@ -72,7 +72,7 @@ def get_msg_inline_keyboard(
         ],
         [
             InlineKeyboardButton(
-                text="بازگشت 🔙", callback_data=MsgListCB(page=0).pack()
+                text="بازگشت 🔙", callback_data=MsgListCB(page=0, type=before_type).pack()
             ),
             InlineKeyboardButton(text="خروج ✖️", callback_data="exit"),
         ],

@@ -64,7 +64,7 @@ def get_user_inline_keyboard(pk: int, type_value: int) -> InlineKeyboardMarkup:
             InlineKeyboardButton(text="خروج ✖️", callback_data="exit"),
         ],
     ]
-    if type_value == 2:
+    if type_value == 3:
         kb.insert(
             0,
             [

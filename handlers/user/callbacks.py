@@ -18,9 +18,19 @@ router = Router(name="callbacks-router")
 # router.callback_query.filter(LimitLevel(type=UserType.USER))
 
 
+@router.callback_query(F.data == "exit")
+async def exit(callback: CallbackQuery, user):
+    await callback.message.delete()
+
+
 @router.callback_query(MsgListCB.filter())
 async def list_msg(callback: CallbackQuery, callback_data: MsgListCB):
-    msgs = msg_db.uread_msgs(callback.from_user.id)
+    if callback_data.type == "unread":
+        msgs = msg_db.uread_msgs(callback.from_user.id, callback_data.page + 1)
+    if callback_data.type == "udone":
+        msgs = msg_db.udone_msgs(callback.from_user.id, callback_data.page + 1)
+    else:
+        msgs = msg_db.all_msgs(callback.from_user.id, callback_data.page)
     await callback.message.edit_reply_markup(
         reply_markup=get_msg_list_inline_keyboard(
             msgs, page=callback_data.page, type=callback_data.type
@@ -28,39 +38,29 @@ async def list_msg(callback: CallbackQuery, callback_data: MsgListCB):
     )
 
 
-# @router.callback_query(MsgListCB.filter(F.type == "all"))
-# async def all_msgs(callback: CallbackQuery, callback_data: MsgListCB):
-#     msgs = msg_db.all_msgs(callback.from_user.id)
-#     await callback.message.edit_reply_markup(
-#         reply_markup=get_msg_list_inline_keyboard(
-#             msgs, page=callback_data.page, type="all"
-#         )
-#     )
-
-
 @router.callback_query(MsgCB.filter(F.action == "read"))
 async def msg(callback: CallbackQuery, callback_data: MsgCB):
     msg = msg_db.msg(callback_data.pk)
     user = user_db.read(callback.from_user.id)
-    await callback.message.answer(
-        (
-            f"📌 {escape(msg.title) or 'بدون عنوان'}\n"
-            f"<blockquote expandable>{escape(msg.caption)}</blockquote>"
-        ),
+    superuser_status = (
+        f"⚡️ superuser: {'✅'if msg.is_superuser else '❎'}\n"
+        if user.type.value <= 1
+        else ""
     )
+    await callback.message.answer(msg.tel_msg)
     await callback.message.answer(
         (
-            f"🆔 #{callback_data.pk}\n"
-            f"⚡️ superuser: {'✅'if msg.is_superuser else '❎'}\n"
+            f"🆔 #{callback_data.pk}\n{superuser_status}"
             f"👤 name: <b>{escape(msg.sender_name)}</b>\n"
-            f"📅 <i>{JalaliDateTime(msg.datetime_created).strftime(DATE_TIME_FMT, locale='fa')}</i>\n"
+            f"📅 created: <i>{JalaliDateTime(msg.datetime_created).strftime(DATE_TIME_FMT, locale='fa')}</i>\n"
             f"{(msg.star or 0) * '⭐️'}"
         ),
         reply_markup=get_msg_inline_keyboard(
             callback_data.pk,
             user.type,
             msg.done,
-            not bool(msg.star or 0),
+            not (bool(msg.star or 0)) and not msg.done,
+            before_type=callback_data.before_type,
         ),
     )
     await callback.message.delete()

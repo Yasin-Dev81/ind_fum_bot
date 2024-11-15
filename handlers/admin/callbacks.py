@@ -3,6 +3,8 @@ from aiogram.types import CallbackQuery
 from html import escape
 from persiantools.jdatetime import JalaliDateTime
 
+import asyncio
+
 from utils import UserListCB, MsgCB, UserCB, StarCB
 from keyboards import (
     get_user_list_inline_keyboard,
@@ -14,6 +16,7 @@ from db.models import UserType
 from db.methods import user_db, msg_db
 from filters import LimitLevel
 from config import DATE_TIME_FMT
+import glv
 
 
 router = Router(name="callbacks-router")
@@ -23,7 +26,7 @@ router.callback_query.filter(LimitLevel(type=UserType.ADMIN))
 # ------------------------------------------------- msg
 @router.callback_query(MsgCB.filter(F.action == "update"))
 async def update_msg(callback: CallbackQuery, callback_data: MsgCB):
-    # msg = msg_db.done(callback_data.pk)
+    asyncio.create_task(msg_db.done(callback_data.pk))
     await callback.answer(
         "وضعیت به انجام شده تغییر کرد. ✅",
         show_alert=True,
@@ -82,7 +85,8 @@ async def list_user(callback: CallbackQuery, callback_data: UserListCB):
 async def user(callback: CallbackQuery, callback_data: MsgCB):
     user = user_db.read(callback_data.pk)
     await callback.message.answer(
-        f"🆔 #{callback_data.pk}\n👤 {escape(user.name)}\n💬 @{user.username}",
+        f"🆔 #{callback_data.pk}\n👤 {escape(user.name)}\n💬 @{user.username}\n"
+        f"📅 {JalaliDateTime(user.datetime_created).strftime(DATE_TIME_FMT, locale='fa')}",
         reply_markup=get_user_inline_keyboard(callback_data.pk, user.type.value),
     )
     await callback.message.delete()
@@ -93,8 +97,9 @@ async def set_superuser(callback: CallbackQuery, callback_data: MsgCB):
     user_db.set_superuser(callback_data.pk)
     await callback.answer("با موفقیت سوپر یوزر شد.", show_alert=True)
     await callback.message.edit_reply_markup(
-        reply_markup=get_user_inline_keyboard(callback_data.pk, 1),
+        reply_markup=get_user_inline_keyboard(callback_data.pk, 2),
     )
+    await glv.bot.send_message(callback_data.pk, "تبریک 🎉\nشما به واسطه‌ی مدیر گروه <b>سوپریوزر</b> شدید.")
 
 
 def register_callbacks(dp: Dispatcher):

@@ -2,6 +2,7 @@ import asyncio
 
 from utils import send_msg
 from keyboards import get_notif_inline_keyboard
+from config import PAGINATION
 from db.base import get_session
 from db.models import (
     User,
@@ -84,38 +85,62 @@ def reply(title: str | None, text: str, msg_id: int, **kwargs) -> User:
         return msg
 
 
-def uread_msgs(user_id: int) -> list[Message]:
+def uread_msgs(user_id: int, page: int = 1) -> list[Message]:
     with get_session() as session:
         # return session.query(Message).filter_by(receiver_id=user_id, seen=False).all()
+        # offset_value = (page - 1) * PAGINATION
         return (
             session.query(Message)
-            .join(User, User.id == Message.sender_id)
-            .filter(Message.receiver_id == user_id, Message.seen == False)  # noqa: E712
+            .join(User, User.id == Message.receiver_id)
+            .outerjoin(Star, Star.message_id == Message.id)
+            .filter(Message.receiver_id == user_id, Message.seen.is_(False))
             .order_by(User.type != UserType.SUPERUSER, Message.datetime_created)
+            # .limit(PAGINATION)
+            # .offset(offset_value)
             .all()
         )
 
 
-def udone_msgs(user_id: int) -> list[Message]:
+def udone_msgs(user_id: int, page: int = 1) -> list[Message]:
     with get_session() as session:
         # return session.query(Message).filter_by(receiver_id=user_id, done=False).all()
+        # offset_value = (page - 1) * PAGINATION
         return (
             session.query(Message)
-            .join(User, User.id == Message.sender_id)
-            .filter(Message.receiver_id == user_id, Message.done == False)  # noqa: E712
-            .order_by(User.type != UserType.SUPERUSER, Message.datetime_created)
+            .join(User, User.id == Message.receiver_id)
+            .outerjoin(Star, Star.message_id == Message.id)
+            .filter(
+                Message.receiver_id == user_id,
+                Message.done.is_(False),
+                Message.seen.is_(True),
+            )
+            .order_by(
+                Star.star.desc(),
+                User.type != UserType.SUPERUSER,
+                Message.datetime_created,
+            )
+            # .limit(PAGINATION)
+            # .offset(offset_value)
             .all()
         )
 
 
-def all_msgs(user_id: int) -> list[Message]:
+def all_msgs(user_id: int, page: int = 1) -> list[Message]:
     with get_session() as session:
         # return session.query(Message).filter_by(receiver_id=user_id).all()
+        # offset_value = (page - 1) * PAGINATION
         return (
             session.query(Message)
-            .join(User, User.id == Message.sender_id)
-            .filter(Message.receiver_id == user_id)  # noqa: E712
-            .order_by(User.type != UserType.SUPERUSER, Message.datetime_created)
+            .join(User, User.id == Message.receiver_id)
+            .outerjoin(Star, Star.message_id == Message.id)
+            .filter(Message.receiver_id == user_id)
+            .order_by(
+                Star.star.desc(),
+                User.type != UserType.SUPERUSER,
+                Message.datetime_created,
+            )
+            # .limit(PAGINATION)
+            # .offset(offset_value)
             .all()
         )
 
@@ -126,8 +151,7 @@ def msg(pk: int) -> Message:
         query = (
             session.query(
                 Message.id,
-                Message.title,
-                Message.caption,
+                Message.tel_msg,
                 Message.sender_id,
                 Message.receiver_id,
                 Message.done,
@@ -159,15 +183,18 @@ async def seen(pk: int) -> Message:
     return await asyncio.to_thread(mark_seen)
 
 
-def done(pk: int) -> Message:
-    with get_session() as session:
-        msg = session.get(Message, pk)
-        if not msg:
-            raise ValueError(f"Message with id {pk} not found.")
+async def done(pk: int) -> Message:
+    def mark_done():
+        with get_session() as session:
+            msg = session.get(Message, pk)
+            if not msg:
+                raise ValueError(f"Message with id {pk} not found.")
 
-        msg.done = True
-        session.commit()
-        return msg
+            msg.done = True
+            session.commit()
+            return msg
+
+    return await asyncio.to_thread(mark_done)
 
 
 def user_media_notif(pk: int) -> UserNotif:
