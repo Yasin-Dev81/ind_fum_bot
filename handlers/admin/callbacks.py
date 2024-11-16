@@ -33,7 +33,10 @@ async def update_msg(callback: CallbackQuery, callback_data: MsgCB):
     )
     await callback.message.edit_reply_markup(
         reply_markup=get_msg_inline_keyboard(
-            callback_data.pk, UserType.ADMIN, done=True
+            callback_data.pk,
+            UserType.ADMIN,
+            done=True,
+            before_type=callback_data.before_type,
         )
     )
 
@@ -99,7 +102,9 @@ async def set_superuser(callback: CallbackQuery, callback_data: MsgCB):
     await callback.message.edit_reply_markup(
         reply_markup=get_user_inline_keyboard(callback_data.pk, 2),
     )
-    await glv.bot.send_message(callback_data.pk, "تبریک 🎉\nشما به واسطه‌ی مدیر گروه <b>سوپریوزر</b> شدید.")
+    await glv.bot.send_message(
+        callback_data.pk, "تبریک 🎉\nشما به واسطه‌ی مدیر گروه <b>سوپریوزر</b> شدید."
+    )
 
 
 def register_callbacks(dp: Dispatcher):

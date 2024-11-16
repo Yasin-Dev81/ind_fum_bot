@@ -10,6 +10,7 @@ class MsgCB(CallbackData, prefix="msg"):
 class StarCB(CallbackData, prefix="star"):
     pk: int
     count: int
+    before_type: str = "all"
 
 
 class MsgListCB(CallbackData, prefix="list_msg"):

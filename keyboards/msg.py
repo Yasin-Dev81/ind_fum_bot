@@ -17,7 +17,10 @@ def get_msg_list_inline_keyboard(
     for i in paginated_msgs:
         builder.row(
             InlineKeyboardButton(
-                text=f"{i.title or 'بدون عنوان'}",
+                text="{status} {title}".format(
+                    status="✅" if i.done else "❎",
+                    title=(i.title or "بدون عنوان")[::20] + "...",
+                ),
                 callback_data=MsgCB(pk=i.id, before_type=type).pack(),
             )
         )
@@ -48,13 +51,15 @@ def get_msg_list_inline_keyboard(
     return builder.as_markup()
 
 
-def add_buttons(kb, row, buttons, pk):
+def add_buttons(kb, row, buttons, pk, before_type="all"):
     kb.insert(
         row,
         [
             InlineKeyboardButton(
                 text=btn["text"],
-                callback_data=MsgCB(pk=pk, action=btn["action"]).pack(),
+                callback_data=MsgCB(
+                    pk=pk, action=btn["action"], before_type=before_type
+                ).pack(),
             )
             for btn in buttons
         ],
@@ -62,7 +67,11 @@ def add_buttons(kb, row, buttons, pk):
 
 
 def get_msg_inline_keyboard(
-    pk: int, user_type: UserType, done: bool = False, need_star: bool = False, before_type: str = "all"
+    pk: int,
+    user_type: UserType,
+    done: bool = False,
+    need_star: bool = False,
+    before_type: str = "all",
 ) -> InlineKeyboardMarkup:
     kb = [
         [
@@ -72,7 +81,8 @@ def get_msg_inline_keyboard(
         ],
         [
             InlineKeyboardButton(
-                text="بازگشت 🔙", callback_data=MsgListCB(page=0, type=before_type).pack()
+                text="بازگشت 🔙",
+                callback_data=MsgListCB(page=0, type=before_type).pack(),
             ),
             InlineKeyboardButton(text="خروج ✖️", callback_data="exit"),
         ],
@@ -96,6 +106,7 @@ def get_msg_inline_keyboard(
                 {"text": "✅" if done else "❎", "action": "update"},
             ],
             pk,
+            before_type,
         )
         if need_star:
             add_buttons(kb, 1, [{"text": "تنظیم اولویت ⭐️", "action": "set_star"}], pk)
@@ -136,6 +147,9 @@ def get_star_inline_keyboard(pk: int) -> InlineKeyboardMarkup:
             InlineKeyboardButton(
                 text="5x⭐️", callback_data=StarCB(pk=pk, count=5).pack()
             ),
+        ],
+        [
+            InlineKeyboardButton(text="cancel", callback_data="exit"),
         ],
     ]
     return InlineKeyboardBuilder(kb).as_markup()
