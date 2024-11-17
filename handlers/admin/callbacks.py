@@ -47,7 +47,7 @@ async def set_star(callback: CallbackQuery, callback_data: MsgCB):
         "چند ستاره مدنظرتان است:",
         reply_markup=get_star_inline_keyboard(callback_data.pk),
     )
-    await callback.message.delete()
+    # await callback.message.delete()
 
 
 @router.callback_query(StarCB.filter())
@@ -73,6 +73,16 @@ async def set_star_count(callback: CallbackQuery, callback_data: StarCB):
             not bool(msg.star or 0),
         ),
     )
+
+
+@router.callback_query(MsgCB.filter(F.action == "delete"))
+async def delete_msg(callback: CallbackQuery, callback_data: MsgCB):
+    msg_db.delete(callback_data.pk)
+    await callback.answer(
+        "پیام با موفقیت حذف شد. 🗑",
+        show_alert=True,
+    )
+    await callback.message.delete()
 
 
 # ------------------------------------------------- user

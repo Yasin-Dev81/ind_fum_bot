@@ -19,7 +19,11 @@ def get_msg_list_inline_keyboard(
             InlineKeyboardButton(
                 text="{status} {title}".format(
                     status="✅" if i.done else "❎",
-                    title=(i.title or "بدون عنوان")[::20] + "...",
+                    title=(
+                        (i.title[:20] + "...")
+                        if i.title and len(i.title) > 20
+                        else (i.title or "بدون عنوان")
+                    ),
                 ),
                 callback_data=MsgCB(pk=i.id, before_type=type).pack(),
             )

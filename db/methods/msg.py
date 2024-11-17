@@ -216,3 +216,13 @@ def set_star(msg_id: int, count: int) -> str:
         session.add(star)
         session.commit()
         return count
+
+
+def delete(pk: int) -> bool:
+    with get_session() as session:
+        ct = session.query(Message).get(pk)
+        if ct:
+            session.delete(ct)
+            session.commit()
+            return True
+        return False
