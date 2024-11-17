@@ -31,11 +31,21 @@ async def list_msg(callback: CallbackQuery, callback_data: MsgListCB):
         msgs = msg_db.udone_msgs(callback.from_user.id, callback_data.page + 1)
     else:
         msgs = msg_db.all_msgs(callback.from_user.id, callback_data.page)
-    await callback.message.edit_reply_markup(
-        reply_markup=get_msg_list_inline_keyboard(
-            msgs, page=callback_data.page, type=callback_data.type
+
+    if callback_data.page == 0:
+        await callback.message.answer(
+            "یک پیام انتخاب کنید ⬇️",
+            reply_markup=get_msg_list_inline_keyboard(
+                msgs, page=0, type=callback_data.type
+            ),
         )
-    )
+        await callback.message.delete()
+    else:
+        await callback.message.edit_reply_markup(
+            reply_markup=get_msg_list_inline_keyboard(
+                msgs, page=callback_data.page, type=callback_data.type
+            )
+        )
 
 
 @router.callback_query(MsgCB.filter(F.action == "read"))
