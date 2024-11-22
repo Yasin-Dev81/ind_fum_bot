@@ -37,6 +37,12 @@ def get_main_menu_keyboard(type_value: int) -> ReplyKeyboardMarkup:
                 KeyboardButton(text="در حال انجام 🔄"),
             ],
         )
+    elif type_value == 4:
+        kb = [
+            [
+                KeyboardButton(text="بن شده‌اید!"),
+            ]
+        ]
     else:
         kb = [
             [

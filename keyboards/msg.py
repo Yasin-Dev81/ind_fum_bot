@@ -1,7 +1,7 @@
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
-from config import PAGINATION, STATUS_LEVEL
+from config import PAGINATION, STATUS_LEVEL, STATUS_EMOJI
 from utils import MsgCB, MsgListCB, StarCB, StatusCB
 from db.models import UserType, Message as MessageDB
 
@@ -18,7 +18,7 @@ def get_msg_list_inline_keyboard(
         builder.row(
             InlineKeyboardButton(
                 text="{status} {title}".format(
-                    status="✅" if i.done else "❎",
+                    status=STATUS_EMOJI[i.status.value],
                     title=(
                         (i.title[:20] + "...")
                         if i.title and len(i.title) > 20
@@ -95,7 +95,7 @@ def get_msg_inline_keyboard(
             kb,
             1,
             [
-                {"text": "بلاک کردن ❌", "action": "block"},
+                # {"text": "بلاک کردن ❌", "action": "block"},
                 {"text": "حذف پیام 🗑", "action": "delete"},
             ],
             pk,

@@ -67,6 +67,16 @@ def set_superuser(pk: int) -> bool:
         session.commit()
 
 
+def block(pk: int) -> bool:
+    with get_session() as session:
+        user = session.query(User).get(pk)
+        if not user:
+            raise ValueError
+
+        user.type = UserType.BLOCKED
+        session.commit()
+
+
 def search(name: str) -> list[User]:
     with get_session() as session:
         return (

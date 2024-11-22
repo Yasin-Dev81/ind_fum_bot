@@ -26,6 +26,9 @@ async def users(message: Message):
 @router.message(F.text == "انجام نشده ❎")
 async def udone_msg(message: Message):
     msgs = msg_db.inqueue_msgs(message.from_user.id)
+    if not msgs:
+        await message.answer("هیچ پیامی در لیست نیست!")
+        return
     await message.answer(
         "یک پیام انتخاب کنید ⬇️",
         reply_markup=get_msg_list_inline_keyboard(msgs, page=0, type="udone"),
@@ -35,6 +38,9 @@ async def udone_msg(message: Message):
 @router.message(F.text == "در حال انجام 🔄")
 async def process_msg(message: Message):
     msgs = msg_db.process_msgs(message.from_user.id)
+    if not msgs:
+        await message.answer("هیچ پیامی در لیست نیست!")
+        return
     await message.answer(
         "یک پیام انتخاب کنید ⬇️",
         reply_markup=get_msg_list_inline_keyboard(msgs, page=0, type="process"),

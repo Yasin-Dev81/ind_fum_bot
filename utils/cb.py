@@ -14,7 +14,7 @@ class StarCB(CallbackData, prefix="star"):
     before_type: str = "all"
 
 
-class StatusCB(CallbackData, prefix="star"):
+class StatusCB(CallbackData, prefix="status"):
     pk: int
     status_value: int
     before_type: str = "all"

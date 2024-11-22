@@ -22,6 +22,7 @@ class UserType(enum.Enum):
     ADMIN = 1
     SUPERUSER = 2
     USER = 3
+    BLOCKED = 4
 
 
 class StatusType(enum.Enum):

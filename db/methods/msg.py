@@ -29,6 +29,7 @@ def create(title: str, text: str, for_admin: bool = True, **kwargs) -> User:
             receiver_id=receiver.id,
             caption=text,
             title=title,
+            status=StatusType.INQUEUE,
         )
         session.add(msg)
 
@@ -65,6 +66,7 @@ def reply(title: str | None, text: str, msg_id: int, **kwargs) -> User:
             receiver_id=r_msg.sender_id,
             title=title,
             caption=text,
+            status=StatusType.INQUEUE,
         )
         session.add(msg)
 
@@ -94,7 +96,7 @@ def uread_msgs(user_id: int, page: int = 1) -> list[Message]:
         # offset_value = (page - 1) * PAGINATION
         return (
             session.query(Message)
-            .join(User, User.id == Message.receiver_id)
+            .join(User, User.id == Message.sender_id)
             .outerjoin(Star, Star.message_id == Message.id)
             .filter(Message.receiver_id == user_id, Message.seen.is_(False))
             .order_by(User.type != UserType.SUPERUSER, Message.datetime_created)
@@ -110,11 +112,11 @@ def inqueue_msgs(user_id: int, page: int = 1) -> list[Message]:
         # offset_value = (page - 1) * PAGINATION
         return (
             session.query(Message)
-            .join(User, User.id == Message.receiver_id)
+            .join(User, User.id == Message.sender_id)
             .outerjoin(Star, Star.message_id == Message.id)
             .filter(
                 Message.receiver_id == user_id,
-                Message.status.is_(StatusType.INQUEUE),
+                Message.status == StatusType.INQUEUE,
                 Message.seen.is_(True),
             )
             .order_by(
@@ -122,8 +124,6 @@ def inqueue_msgs(user_id: int, page: int = 1) -> list[Message]:
                 User.type != UserType.SUPERUSER,
                 Message.datetime_created,
             )
-            # .limit(PAGINATION)
-            # .offset(offset_value)
             .all()
         )
 
@@ -134,11 +134,11 @@ def process_msgs(user_id: int, page: int = 1) -> list[Message]:
         # offset_value = (page - 1) * PAGINATION
         return (
             session.query(Message)
-            .join(User, User.id == Message.receiver_id)
+            .join(User, User.id == Message.sender_id)
             .outerjoin(Star, Star.message_id == Message.id)
             .filter(
                 Message.receiver_id == user_id,
-                Message.status.is_(StatusType.PROCESS),
+                Message.status == StatusType.PROCESS,
                 Message.seen.is_(True),
             )
             .order_by(
@@ -158,7 +158,7 @@ def all_msgs(user_id: int, page: int = 1) -> list[Message]:
         # offset_value = (page - 1) * PAGINATION
         return (
             session.query(Message)
-            .join(User, User.id == Message.receiver_id)
+            .join(User, User.id == Message.sender_id)
             .outerjoin(Star, Star.message_id == Message.id)
             .filter(Message.receiver_id == user_id)
             .order_by(
@@ -245,7 +245,7 @@ def update_status(pk: int, status_value: int = 0) -> Message:
                 send_msg_list(
                     users_read_alls(),
                     f"🔊 <tg-spoiler>آپدیت وضعیت موضوعات</tg-spoiler>\nموضوع <b>{msg.title}</b>"
-                    " پیگیری شد و به وضعیت آن به انجام شده تغییر کرد.",
+                    " پیگیری شد و به وضعیت آن به انجام شده تغییر کرد. 🎉",
                 )
             )
         return msg

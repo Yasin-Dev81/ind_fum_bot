@@ -39,7 +39,6 @@ async def send_superuser_msg(message: Message):
                 await message.answer(
                     "این ساختار متن مورد قبول نیست! (دوباره روی دکمه‌ی پاسخ بزنید)"
                 )
-
         else:
             await message.answer("صرفا متن ارسال کنید! (دوباره روی دکمه بزنید)")
     except TimeoutError:
@@ -52,6 +51,9 @@ async def send_superuser_msg(message: Message):
 @router.message(F.text == "پیام‌های خوانده نشده 📥")
 async def unread_msg(message: Message):
     msgs = msg_db.uread_msgs(message.from_user.id)
+    if not msgs:
+        await message.answer("هیچ پیامی در لیست نیست!")
+        return
     await message.answer(
         "یک پیام انتخاب کنید ⬇️",
         reply_markup=get_msg_list_inline_keyboard(msgs, page=0, type="unread"),
@@ -61,6 +63,9 @@ async def unread_msg(message: Message):
 @router.message(F.text == "تمامی پیام‌ها ↙️")
 async def all_msg(message: Message):
     msgs = msg_db.all_msgs(message.from_user.id)
+    if not msgs:
+        await message.answer("هیچ پیامی در لیست نیست!")
+        return
     await message.answer(
         "یک پیام انتخاب کنید ⬇️",
         reply_markup=get_msg_list_inline_keyboard(msgs, page=0, type="all"),
@@ -70,6 +75,9 @@ async def all_msg(message: Message):
 @router.message(F.text == "پیام‌های ارسال شده ↗️")
 async def sendes_msg(message: Message):
     msgs = msg_db.sendes_msgs(message.from_user.id)
+    if not msgs:
+        await message.answer("هیچ پیامی در لیست نیست!")
+        return
     await message.answer(
         "یک پیام انتخاب کنید ⬇️",
         reply_markup=get_msg_list_inline_keyboard(msgs, page=0, type="sendes"),

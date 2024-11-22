@@ -3,9 +3,9 @@ from aiogram.types import CallbackQuery
 from html import escape
 from persiantools.jdatetime import JalaliDateTime
 
-# import asyncio
+import asyncio
 
-from utils import UserListCB, MsgCB, UserCB, StarCB, StatusCB
+from utils import UserListCB, MsgCB, UserCB, StarCB, StatusCB, block_user
 from keyboards import (
     get_user_list_inline_keyboard,
     get_user_inline_keyboard,
@@ -32,6 +32,7 @@ async def update_msg(callback: CallbackQuery, callback_data: MsgCB):
         "وضعیت را مشخص کنید ⬇️",
         reply_markup=get_status_type_inline_keyboard(callback_data.pk),
     )
+    await callback.message.delete()
 
 
 @router.callback_query(StatusCB.filter())
@@ -42,6 +43,25 @@ async def set_status_msg(callback: CallbackQuery, callback_data: StatusCB):
     )
     await callback.message.delete()
 
+    msg = msg_db.msg(callback_data.pk)
+    username_id = f"@{msg.username}" or ""
+    await callback.message.answer(
+        (
+            f"🆔 #{callback_data.pk}\n"
+            f"⚡️ superuser: {'✅'if msg.is_superuser else '❎'}\n"
+            f"◾️ وضعیت: <b>{STATUS_LEVEL[msg.status.value]}</b>\n"
+            f"👤 فرستنده: <b>{escape(msg.sender_name)}</b> {username_id}\n"
+            f"📅 زمان ارسال: <i>{JalaliDateTime(msg.datetime_created).strftime(DATE_TIME_FMT, locale='fa')}</i>\n"
+            f"{(msg.star or 0) * '⭐️'}"
+        ),
+        reply_markup=get_msg_inline_keyboard(
+            callback_data.pk,
+            UserType.ADMIN,
+            not (bool(msg.star or 0)),
+            before_type=callback_data.before_type,
+        ),
+    )
+
 
 @router.callback_query(MsgCB.filter(F.action == "set_star"))
 async def set_star(callback: CallbackQuery, callback_data: MsgCB):
@@ -49,7 +69,7 @@ async def set_star(callback: CallbackQuery, callback_data: MsgCB):
         "چند ستاره مدنظرتان است ⬇️",
         reply_markup=get_star_inline_keyboard(callback_data.pk),
     )
-    # await callback.message.delete()
+    await callback.message.delete()
 
 
 @router.callback_query(StarCB.filter())
@@ -61,18 +81,21 @@ async def set_star_count(callback: CallbackQuery, callback_data: StarCB):
     await callback.message.delete()
 
     msg = msg_db.msg(callback_data.pk)
+    username_id = f"@{msg.username}" or ""
     await callback.message.answer(
         (
             f"🆔 #{callback_data.pk}\n"
-            f"👤 <b>{escape(msg.sender_name)}</b>\n"
-            f"📅 <i>{JalaliDateTime(msg.datetime_created).strftime(DATE_TIME_FMT, locale='fa')}</i>\n"
+            f"⚡️ superuser: {'✅'if msg.is_superuser else '❎'}\n"
+            f"◾️ وضعیت: <b>{STATUS_LEVEL[msg.status.value]}</b>\n"
+            f"👤 فرستنده: <b>{escape(msg.sender_name)}</b> {username_id}\n"
+            f"📅 زمان ارسال: <i>{JalaliDateTime(msg.datetime_created).strftime(DATE_TIME_FMT, locale='fa')}</i>\n"
             f"{(msg.star or 0) * '⭐️'}"
         ),
         reply_markup=get_msg_inline_keyboard(
             callback_data.pk,
             UserType.ADMIN,
-            msg.done,
-            not bool(msg.star or 0),
+            not (bool(msg.star or 0)),
+            before_type=callback_data.before_type,
         ),
     )
 
@@ -104,6 +127,14 @@ async def user(callback: CallbackQuery, callback_data: MsgCB):
         f"📅 {JalaliDateTime(user.datetime_created).strftime(DATE_TIME_FMT, locale='fa')}",
         reply_markup=get_user_inline_keyboard(callback_data.pk, user.type.value),
     )
+    await callback.message.delete()
+
+
+@router.callback_query(UserCB.filter(F.action == "block"))
+async def block(callback: CallbackQuery, callback_data: MsgCB):
+    user_db.block(callback_data.pk)
+    asyncio.create_task(block_user(callback_data.pk))
+    await callback.answer("کاربر بلاک شد.", show_alert=True)
     await callback.message.delete()
 
 
