@@ -20,7 +20,9 @@ router.message.filter(LimitLevel(type=UserType.USER))
 
 @router.message(F.text == "ارتباط با مدیر گروه 🚀")
 async def send_superuser_msg(message: Message):
-    await message.answer("لطفا پیام خود را ارسال کنید: (فقط متن)\nدر خط اول عنوان (حداکثر ۶۰ کارکتر) و در باقی خطوط پیام را بنویسید.")
+    await message.answer(
+        "لطفا پیام خود را ارسال کنید: (فقط متن)\nدر خط اول عنوان (حداکثر ۶۰ کارکتر) و در باقی خطوط پیام را بنویسید."
+    )
     try:
         response: Message = await aiostep.wait_for(message.from_user.id, timeout=500)
         if response.text:
@@ -34,7 +36,9 @@ async def send_superuser_msg(message: Message):
 
                 await message.answer("پیام شما با موفقیت ثبت شد.")
             else:
-                await message.answer("این ساختار متن مورد قبول نیست! (دوباره روی دکمه‌ی پاسخ بزنید)")
+                await message.answer(
+                    "این ساختار متن مورد قبول نیست! (دوباره روی دکمه‌ی پاسخ بزنید)"
+                )
 
         else:
             await message.answer("صرفا متن ارسال کنید! (دوباره روی دکمه بزنید)")
@@ -60,6 +64,15 @@ async def all_msg(message: Message):
     await message.answer(
         "یک پیام انتخاب کنید ⬇️",
         reply_markup=get_msg_list_inline_keyboard(msgs, page=0, type="all"),
+    )
+
+
+@router.message(F.text == "پیام‌های ارسال شده ↗️")
+async def sendes_msg(message: Message):
+    msgs = msg_db.sendes_msgs(message.from_user.id)
+    await message.answer(
+        "یک پیام انتخاب کنید ⬇️",
+        reply_markup=get_msg_list_inline_keyboard(msgs, page=0, type="sendes"),
     )
 
 
@@ -99,7 +112,9 @@ async def send_admin_msg(message: Message):
 
                 await message.answer("پیام شما با موفقیت ثبت شد.")
             else:
-                await message.answer("این ساختار متن مورد قبول نیست! (دوباره روی دکمه‌ی پاسخ بزنید)")
+                await message.answer(
+                    "این ساختار متن مورد قبول نیست! (دوباره روی دکمه‌ی پاسخ بزنید)"
+                )
         else:
             await message.answer("صرفا متن ارسال کنید! (دوباره روی دکمه بزنید)")
     except TimeoutError:

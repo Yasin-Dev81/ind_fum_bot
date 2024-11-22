@@ -1,13 +1,13 @@
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
-from config import PAGINATION
-from utils import MsgCB, MsgListCB, StarCB
+from config import PAGINATION, STATUS_LEVEL
+from utils import MsgCB, MsgListCB, StarCB, StatusCB
 from db.models import UserType, Message as MessageDB
 
 
 def get_msg_list_inline_keyboard(
-    msgs: list[MessageDB], page, type
+    msgs: list[MessageDB], page, type, search_string = None
 ) -> InlineKeyboardMarkup:
     start = page * PAGINATION
     end = start + PAGINATION
@@ -34,14 +34,14 @@ def get_msg_list_inline_keyboard(
         navigation_buttons.append(
             InlineKeyboardButton(
                 text="◀️ Previous",
-                callback_data=MsgListCB(page=page - 1, type=type).pack(),
+                callback_data=MsgListCB(page=page - 1, type=type, search_string=search_string).pack(),
             )
         )
     if end < len(msgs):
         navigation_buttons.append(
             InlineKeyboardButton(
                 text="Next ▶️",
-                callback_data=MsgListCB(page=page + 1, type=type).pack(),
+                callback_data=MsgListCB(page=page + 1, type=type, search_string=search_string).pack(),
             )
         )
 
@@ -73,7 +73,6 @@ def add_buttons(kb, row, buttons, pk, before_type="all"):
 def get_msg_inline_keyboard(
     pk: int,
     user_type: UserType,
-    done: bool = False,
     need_star: bool = False,
     before_type: str = "all",
 ) -> InlineKeyboardMarkup:
@@ -107,7 +106,6 @@ def get_msg_inline_keyboard(
             0,
             [
                 {"text": "تغییر وضعیت", "action": "update"},
-                {"text": "✅" if done else "❎", "action": "update"},
             ],
             pk,
             before_type,
@@ -152,6 +150,23 @@ def get_star_inline_keyboard(pk: int) -> InlineKeyboardMarkup:
                 text="5x⭐️", callback_data=StarCB(pk=pk, count=5).pack()
             ),
         ],
+        [
+            InlineKeyboardButton(text="cancel", callback_data="exit"),
+        ],
+    ]
+    return InlineKeyboardBuilder(kb).as_markup()
+
+
+def get_status_type_inline_keyboard(pk: int) -> InlineKeyboardMarkup:
+    kb = [
+        [
+            InlineKeyboardButton(
+                text=STATUS_LEVEL[i],
+                callback_data=StatusCB(pk=pk, status_value=i).pack(),
+            ),
+        ]
+        for i in range(4)
+    ] + [
         [
             InlineKeyboardButton(text="cancel", callback_data="exit"),
         ],

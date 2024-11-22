@@ -1,4 +1,5 @@
 from aiogram.filters.callback_data import CallbackData
+from typing import Optional
 
 
 class MsgCB(CallbackData, prefix="msg"):
@@ -13,9 +14,16 @@ class StarCB(CallbackData, prefix="star"):
     before_type: str = "all"
 
 
+class StatusCB(CallbackData, prefix="star"):
+    pk: int
+    status_value: int
+    before_type: str = "all"
+
+
 class MsgListCB(CallbackData, prefix="list_msg"):
     page: int
     type: str = "unread"
+    search_string: Optional[int] = None
 
 
 class UserCB(CallbackData, prefix="user"):

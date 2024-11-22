@@ -10,6 +10,9 @@ def get_main_menu_keyboard(type_value: int) -> ReplyKeyboardMarkup:
             KeyboardButton(text="تمامی پیام‌ها ↙️"),
         ],
         [
+            KeyboardButton(text="پیام‌های ارسال شده ↗️"),
+        ],
+        [
             KeyboardButton(text="یوزرها 👥"),
         ],
         [
@@ -30,7 +33,8 @@ def get_main_menu_keyboard(type_value: int) -> ReplyKeyboardMarkup:
         kb.insert(
             1,
             [
-                KeyboardButton(text="موضوعات انجام نشده ❎"),
+                KeyboardButton(text="انجام نشده ❎"),
+                KeyboardButton(text="در حال انجام 🔄"),
             ],
         )
     else:
@@ -43,6 +47,9 @@ def get_main_menu_keyboard(type_value: int) -> ReplyKeyboardMarkup:
             ],
             [
                 KeyboardButton(text="تمامی پیام‌ها ↙️"),
+            ],
+            [
+                KeyboardButton(text="پیام‌های ارسال شده ↗️"),
             ],
             [
                 KeyboardButton(text="اطلاعات من ℹ️"),

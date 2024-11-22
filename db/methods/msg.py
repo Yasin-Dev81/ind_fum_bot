@@ -1,15 +1,18 @@
 import asyncio
 
-from utils import send_msg
+from utils import send_msg, send_msg_list
 from keyboards import get_notif_inline_keyboard
-from config import PAGINATION
+
+# from config import PAGINATION
 from db.base import get_session
+from db.methods.user import read_alls as users_read_alls
 from db.models import (
     User,
     UserType,
     Message,
     UserNotif,
     Star,
+    StatusType,
 )
 
 
@@ -101,7 +104,7 @@ def uread_msgs(user_id: int, page: int = 1) -> list[Message]:
         )
 
 
-def udone_msgs(user_id: int, page: int = 1) -> list[Message]:
+def inqueue_msgs(user_id: int, page: int = 1) -> list[Message]:
     with get_session() as session:
         # return session.query(Message).filter_by(receiver_id=user_id, done=False).all()
         # offset_value = (page - 1) * PAGINATION
@@ -111,7 +114,31 @@ def udone_msgs(user_id: int, page: int = 1) -> list[Message]:
             .outerjoin(Star, Star.message_id == Message.id)
             .filter(
                 Message.receiver_id == user_id,
-                Message.done.is_(False),
+                Message.status.is_(StatusType.INQUEUE),
+                Message.seen.is_(True),
+            )
+            .order_by(
+                Star.star.desc(),
+                User.type != UserType.SUPERUSER,
+                Message.datetime_created,
+            )
+            # .limit(PAGINATION)
+            # .offset(offset_value)
+            .all()
+        )
+
+
+def process_msgs(user_id: int, page: int = 1) -> list[Message]:
+    with get_session() as session:
+        # return session.query(Message).filter_by(receiver_id=user_id, done=False).all()
+        # offset_value = (page - 1) * PAGINATION
+        return (
+            session.query(Message)
+            .join(User, User.id == Message.receiver_id)
+            .outerjoin(Star, Star.message_id == Message.id)
+            .filter(
+                Message.receiver_id == user_id,
+                Message.status.is_(StatusType.PROCESS),
                 Message.seen.is_(True),
             )
             .order_by(
@@ -145,6 +172,21 @@ def all_msgs(user_id: int, page: int = 1) -> list[Message]:
         )
 
 
+def sendes_msgs(user_id: int, page: int = 1) -> list[Message]:
+    with get_session() as session:
+        # return session.query(Message).filter_by(receiver_id=user_id).all()
+        # offset_value = (page - 1) * PAGINATION
+        return (
+            session.query(Message)
+            .join(User, User.id == Message.sender_id)
+            .outerjoin(Star, Star.message_id == Message.id)
+            .filter(Message.sender_id == user_id)
+            # .limit(PAGINATION)
+            # .offset(offset_value)
+            .all()
+        )
+
+
 def msg(pk: int) -> Message:
     with get_session() as session:
         # return session.query(Message).get(pk)
@@ -154,10 +196,11 @@ def msg(pk: int) -> Message:
                 Message.tel_msg,
                 Message.sender_id,
                 Message.receiver_id,
-                Message.done,
+                Message.status,
                 Message.datetime_created,
                 Message.datetime_modified,
                 User.name.label("sender_name"),
+                User.username,
                 User.is_superuser,
                 Star.star,
             )
@@ -183,18 +226,43 @@ async def seen(pk: int) -> Message:
     return await asyncio.to_thread(mark_seen)
 
 
-async def done(pk: int) -> Message:
-    def mark_done():
-        with get_session() as session:
-            msg = session.get(Message, pk)
-            if not msg:
-                raise ValueError(f"Message with id {pk} not found.")
+def update_status(pk: int, status_value: int = 0) -> Message:
+    with get_session() as session:
+        msg = session.get(Message, pk)
+        if not msg:
+            raise ValueError(f"Message with id {pk} not found.")
 
-            msg.done = True
-            session.commit()
-            return msg
+        try:
+            status_enum = StatusType(status_value)
+        except ValueError:
+            raise ValueError(f"Invalid status value: {status_value}")
 
-    return await asyncio.to_thread(mark_done)
+        msg.status = status_enum
+        session.commit()
+
+        if status_value == 2:
+            asyncio.create_task(
+                send_msg_list(
+                    users_read_alls(),
+                    f"🔊 <tg-spoiler>آپدیت وضعیت موضوعات</tg-spoiler>\nموضوع <b>{msg.title}</b>"
+                    " پیگیری شد و به وضعیت آن به انجام شده تغییر کرد.",
+                )
+            )
+        return msg
+
+
+# async def done(pk: int) -> Message:
+#     def mark_done():
+#         with get_session() as session:
+#             msg = session.get(Message, pk)
+#             if not msg:
+#                 raise ValueError(f"Message with id {pk} not found.")
+
+#             msg.status = True
+#             session.commit()
+#             return msg
+
+#     return await asyncio.to_thread(mark_done)
 
 
 def user_media_notif(pk: int) -> UserNotif:
@@ -226,3 +294,13 @@ def delete(pk: int) -> bool:
             session.commit()
             return True
         return False
+
+
+def search(title: str) -> list[Message]:
+    with get_session() as session:
+        return (
+            session.query(Message)
+            .filter(Message.title.like("%" + title + "%"))
+            # .limit(10)
+            .all()
+        )

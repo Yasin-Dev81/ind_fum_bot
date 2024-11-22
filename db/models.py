@@ -24,6 +24,13 @@ class UserType(enum.Enum):
     USER = 3
 
 
+class StatusType(enum.Enum):
+    INQUEUE = 0
+    PROCESS = 1
+    DONE = 2
+    DISABLE = 3
+
+
 class MediaType(enum.Enum):
     PHOTO = "عکس"
     DOCUMENT = "فایل"
@@ -40,6 +47,7 @@ class Base(DeclarativeBase):
         String32: types.String(length=32),
         datetime: types.DateTime(timezone=True),
         UserType: Enum(UserType, default=UserType.USER),
+        StatusType: Enum(StatusType, default=StatusType.INQUEUE),
         MediaType: Enum(MediaType),
         BigInteger: types.BigInteger(),
         CaptionText: types.Text(length=4096),
@@ -124,7 +132,8 @@ class Message(Base):
     receiver_id: Mapped[BigInteger]
 
     seen: Mapped[bool] = mapped_column(default=False)
-    done: Mapped[bool] = mapped_column(default=False)
+    # done: Mapped[bool] = mapped_column(default=False)
+    status: Mapped[StatusType]
 
     title: Mapped[String60 | None]
     caption: Mapped[CaptionText]

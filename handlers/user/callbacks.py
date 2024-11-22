@@ -9,7 +9,7 @@ import re
 from utils import MsgListCB, MsgCB
 from keyboards import get_msg_list_inline_keyboard, get_msg_inline_keyboard
 from db.methods import msg_db, user_db
-from config import DATE_TIME_FMT
+from config import DATE_TIME_FMT, STATUS_LEVEL
 # from db.models import UserType
 # from filters import LimitLevel
 
@@ -27,8 +27,14 @@ async def exit(callback: CallbackQuery, user):
 async def list_msg(callback: CallbackQuery, callback_data: MsgListCB):
     if callback_data.type == "unread":
         msgs = msg_db.uread_msgs(callback.from_user.id, callback_data.page + 1)
-    if callback_data.type == "udone":
-        msgs = msg_db.udone_msgs(callback.from_user.id, callback_data.page + 1)
+    elif callback_data.type == "udone":
+        msgs = msg_db.inqueue_msgs(callback.from_user.id, callback_data.page + 1)
+    elif callback_data.type == "process":
+        msgs = msg_db.process_msgs(callback.from_user.id, callback_data.page + 1)
+    elif callback_data.type == "sendes":
+        msgs = msg_db.sendes_msgs(callback.from_user.id, callback_data.page + 1)
+    elif callback_data.type == "search":
+        msgs = msg_db.search(callback_data.search_string)
     else:
         msgs = msg_db.all_msgs(callback.from_user.id, callback_data.page)
 
@@ -36,14 +42,20 @@ async def list_msg(callback: CallbackQuery, callback_data: MsgListCB):
         await callback.message.answer(
             "یک پیام انتخاب کنید ⬇️",
             reply_markup=get_msg_list_inline_keyboard(
-                msgs, page=0, type=callback_data.type
+                msgs,
+                page=0,
+                type=callback_data.type,
+                search_string=callback_data.search_string,
             ),
         )
         await callback.message.delete()
     else:
         await callback.message.edit_reply_markup(
             reply_markup=get_msg_list_inline_keyboard(
-                msgs, page=callback_data.page, type=callback_data.type
+                msgs,
+                page=callback_data.page,
+                type=callback_data.type,
+                search_string=callback_data.search_string,
             )
         )
 
@@ -57,19 +69,20 @@ async def msg(callback: CallbackQuery, callback_data: MsgCB):
         if user.type.value <= 1
         else ""
     )
+    username_id = f"@{msg.username}" or ""
     await callback.message.answer(msg.tel_msg)
     await callback.message.answer(
         (
             f"🆔 #{callback_data.pk}\n{superuser_status}"
-            f"👤 name: <b>{escape(msg.sender_name)}</b>\n"
-            f"📅 created: <i>{JalaliDateTime(msg.datetime_created).strftime(DATE_TIME_FMT, locale='fa')}</i>\n"
+            f"◾️ وضعیت: <b>{STATUS_LEVEL[msg.status.value]}</b>\n"
+            f"👤 فرستنده: <b>{escape(msg.sender_name)}</b> {username_id}\n"
+            f"📅 زمان ارسال: <i>{JalaliDateTime(msg.datetime_created).strftime(DATE_TIME_FMT, locale='fa')}</i>\n"
             f"{(msg.star or 0) * '⭐️'}"
         ),
         reply_markup=get_msg_inline_keyboard(
             callback_data.pk,
             user.type,
-            msg.done,
-            not (bool(msg.star or 0)) and not msg.done,
+            not (bool(msg.star or 0)),
             before_type=callback_data.before_type,
         ),
     )

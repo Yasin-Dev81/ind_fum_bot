@@ -3,19 +3,20 @@ from aiogram.types import CallbackQuery
 from html import escape
 from persiantools.jdatetime import JalaliDateTime
 
-import asyncio
+# import asyncio
 
-from utils import UserListCB, MsgCB, UserCB, StarCB
+from utils import UserListCB, MsgCB, UserCB, StarCB, StatusCB
 from keyboards import (
     get_user_list_inline_keyboard,
     get_user_inline_keyboard,
     get_msg_inline_keyboard,
     get_star_inline_keyboard,
+    get_status_type_inline_keyboard,
 )
 from db.models import UserType
 from db.methods import user_db, msg_db
 from filters import LimitLevel
-from config import DATE_TIME_FMT
+from config import DATE_TIME_FMT, STATUS_LEVEL
 import glv
 
 
@@ -26,25 +27,26 @@ router.callback_query.filter(LimitLevel(type=UserType.ADMIN))
 # ------------------------------------------------- msg
 @router.callback_query(MsgCB.filter(F.action == "update"))
 async def update_msg(callback: CallbackQuery, callback_data: MsgCB):
-    asyncio.create_task(msg_db.done(callback_data.pk))
+    await callback.answer("وضعیت را مشخص کنید.")
+    await callback.message.answer(
+        "وضعیت را مشخص کنید ⬇️",
+        reply_markup=get_status_type_inline_keyboard(callback_data.pk),
+    )
+
+
+@router.callback_query(StatusCB.filter())
+async def set_status_msg(callback: CallbackQuery, callback_data: StatusCB):
+    msg_db.update_status(callback_data.pk, callback_data.status_value)
     await callback.answer(
-        "وضعیت به انجام شده تغییر کرد. ✅",
-        show_alert=True,
+        f"وضعیت {STATUS_LEVEL[callback_data.status_value]} تنظیم شد.", show_alert=True
     )
-    await callback.message.edit_reply_markup(
-        reply_markup=get_msg_inline_keyboard(
-            callback_data.pk,
-            UserType.ADMIN,
-            done=True,
-            before_type=callback_data.before_type,
-        )
-    )
+    await callback.message.delete()
 
 
 @router.callback_query(MsgCB.filter(F.action == "set_star"))
 async def set_star(callback: CallbackQuery, callback_data: MsgCB):
     await callback.message.answer(
-        "چند ستاره مدنظرتان است:",
+        "چند ستاره مدنظرتان است ⬇️",
         reply_markup=get_star_inline_keyboard(callback_data.pk),
     )
     # await callback.message.delete()

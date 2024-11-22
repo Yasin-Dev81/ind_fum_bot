@@ -31,6 +31,17 @@ def create(tell_id: int, **kwargs) -> User:
         return user
 
 
+def set_name(pk: int, nick_name: str) -> User:
+    with get_session() as session:
+        user = session.get(User, pk)
+        if not user:
+            raise ValueError
+
+        user.nick_name = nick_name
+        session.commit()
+        return user
+
+
 def read(pk) -> User:
     with get_session() as session:
         return session.query(User).get(pk)
