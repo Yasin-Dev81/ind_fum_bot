@@ -301,6 +301,6 @@ def search(title: str) -> list[Message]:
         return (
             session.query(Message)
             .filter(Message.title.like("%" + title + "%"))
-            # .limit(10)
+            .limit(10)
             .all()
         )
