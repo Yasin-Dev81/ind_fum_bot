@@ -32,7 +32,7 @@ async def send_superuser_msg(message: Message):
     try:
         response: Message = await aiostep.wait_for(message.from_user.id, timeout=500)
         if response.text:
-            match = re.match(r"^(^.{1,60})\n([\s\S]*)$", response.text)
+            match = re.match(r"^(^.{1,60})\n([\s\S]*)$", response.text+"\n")
             if match:
                 msg_db.create(
                     title=match.group(1),

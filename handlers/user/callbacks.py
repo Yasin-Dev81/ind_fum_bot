@@ -69,13 +69,12 @@ async def msg(callback: CallbackQuery, callback_data: MsgCB):
         if user.type.value <= 1
         else ""
     )
-    # username_id = f"@{msg.username}" if msg.username else "بدون آی‌دی"
     await callback.message.answer(msg.tel_msg)
     await callback.message.answer(
         (
             f"🆔 #{callback_data.pk}\n{superuser_status}"
             f"◾️ وضعیت: <b>{STATUS_LEVEL[msg.status.value]}</b>\n"
-            f"👤 فرستنده: <b>{escape(msg.sender_name)}</b> {msg.xname}\n"
+            f"👤 فرستنده: <b>{escape(msg.sender_name)}</b> {msg.xname if user.type.value <= 1 else ''}\n"
             f"📅 زمان ارسال: <i>{JalaliDateTime(msg.datetime_created).strftime(DATE_TIME_FMT, locale='fa')}</i>\n"
             f"{(msg.star or 0) * '⭐️'}"
         ),
@@ -98,7 +97,7 @@ async def reply(callback: CallbackQuery, callback_data: MsgCB):
     try:
         response: Message = await aiostep.wait_for(callback.from_user.id, timeout=500)
         if response.text:
-            match = re.match(r"^(^.{1,60})\n([\s\S]*)$", response.text)
+            match = re.match(r"^(^.{1,60})\n([\s\S]*)$", response.text+"\n")
             if match:
                 msg_db.reply(
                     title=match.group(1),
