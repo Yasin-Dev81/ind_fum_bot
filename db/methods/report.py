@@ -16,11 +16,11 @@ def user_count(by_type: bool = False):
             result = session.execute(
                 select(User.type, func.count(User.id)).group_by(User.type)
             ).all()
+
             df = pd.DataFrame(result, columns=["UserType", "UserCount"])
             user_df = df.pivot_table(
                 index="UserType", values="UserCount", aggfunc="sum"
             )
-
             message_counts = session.execute(
                 select(Message.sender_id, func.count(Message.id)).group_by(
                     Message.sender_id
@@ -29,9 +29,11 @@ def user_count(by_type: bool = False):
             message_df = pd.DataFrame(
                 message_counts, columns=["SenderID", "MessageCount"]
             )
-            return user_df.merge(
-                message_df, left_on="UserType", right_on="SenderID", how="left"
+            merged_df = user_df.merge(
+                message_df, left_index=True, right_on="SenderID", how="left"
             ).fillna(0)
+
+            return merged_df
 
         return session.scalar(select(func.count(User.id)))
 
@@ -39,7 +41,7 @@ def user_count(by_type: bool = False):
 def get_top_starred_messages():
     with get_session() as session:
         return session.execute(
-            select(Message.id, Message.title, func.count(Star.star).label("star_count"))
+            select(Message.id, Message.title, Star.star)
             .join(Star, Star.message_id == Message.id)
             .where(Message.status == StatusType.PROCESS)
             .group_by(Message.id, Message.title)
