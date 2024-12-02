@@ -2,7 +2,7 @@ from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.schema import PrimaryKeyConstraint, ForeignKeyConstraint
 from sqlalchemy.sql import func
-from sqlalchemy import types, Enum, case
+from sqlalchemy import types, Enum, case, literal
 from html import escape
 from typing import NewType
 from datetime import datetime
@@ -112,7 +112,9 @@ class User(Base):
 
     @xname.expression
     def xname(cls):
-        return func.coalesce(cls.username, "بدون عنوان")
+        return func.coalesce(
+            func.concat(literal("@"), cls.username), literal("Unknown")
+        )
 
     @hybrid_property
     def is_superuser(self) -> str:
