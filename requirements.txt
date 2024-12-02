@@ -9,3 +9,4 @@ cryptography==43.0.0
 aiostep==0.1.1
 persiantools==4.2.0
 APScheduler==3.10.4
+pandas==2.2.3

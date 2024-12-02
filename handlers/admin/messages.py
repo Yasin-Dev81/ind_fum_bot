@@ -4,7 +4,7 @@ from aiogram.types import Message
 import aiostep
 import asyncio
 
-from db.methods import user_db, msg_db
+from db.methods import user_db, msg_db, report_db
 from utils import send_msg_list
 from keyboards import get_user_list_inline_keyboard, get_msg_list_inline_keyboard
 from db.models import UserType
@@ -98,7 +98,9 @@ async def send_notif(message: Message):
 
 @router.message(F.text == "گزارش عملکرد 📈")
 async def report(message: Message):
-    await message.answer("comming soon ...")
+    await message.answer(report_db.user_count())
+    await message.answer(report_db.user_count(True))
+    await message.answer(report_db.get_top_starred_messages())
 
 
 def register_messages(dp: Dispatcher):

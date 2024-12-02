@@ -26,7 +26,7 @@ async def send_superuser_msg(message: Message):
         (
             "لطفا پیام خود را بصورت متن ارسال کنید:\n"
             "در خط اول عنوان (حداکثر ۶۰ کارکتر) و در باقی خطوط پیام را بنویسید.\n\n"
-            "- مثال:\n"
+            "◾️ مثال:\n"
             "<blockquote expandable>عنوان تست\nمتن پیام تستی که میتونه هر چند خط که تلگرام اجازه میده باشه.</blockquote>"
         ),
         reply_markup=get_cancel_inline_keyboard(),
