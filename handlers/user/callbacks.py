@@ -7,7 +7,11 @@ import asyncio
 import re
 
 from utils import MsgListCB, MsgCB
-from keyboards import get_msg_list_inline_keyboard, get_msg_inline_keyboard
+from keyboards import (
+    get_msg_list_inline_keyboard,
+    get_msg_inline_keyboard,
+    get_cancel_inline_keyboard,
+)
 from db.methods import msg_db, user_db
 from config import DATE_TIME_FMT, STATUS_LEVEL
 # from db.models import UserType
@@ -19,7 +23,8 @@ router = Router(name="callbacks-router")
 
 
 @router.callback_query(F.data == "exit")
-async def exit(callback: CallbackQuery, user):
+async def exit(callback: CallbackQuery):
+    await aiostep.unregister_steps(callback.from_user.id)
     await callback.message.delete()
 
 
@@ -92,12 +97,13 @@ async def msg(callback: CallbackQuery, callback_data: MsgCB):
 @router.callback_query(MsgCB.filter(F.action == "reply"))
 async def reply(callback: CallbackQuery, callback_data: MsgCB):
     await callback.message.answer(
-        "لطفا پیام خود را ارسال کنید: (فقط متن)", show_alert=True
+        "لطفا پیام خود را ارسال کنید: (فقط متن)",
+        reply_markup=get_cancel_inline_keyboard(),
     )
     try:
         response: Message = await aiostep.wait_for(callback.from_user.id, timeout=500)
         if response.text:
-            match = re.match(r"^(^.{1,60})\n([\s\S]*)$", response.text+"\n")
+            match = re.match(r"^(^.{1,60})\n([\s\S]*)$", response.text + "\n")
             if match:
                 msg_db.reply(
                     title=match.group(1),

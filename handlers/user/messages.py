@@ -9,6 +9,7 @@ from db.methods import msg_db
 from keyboards import (
     get_msg_list_inline_keyboard,
     get_set_notif_file_id_inline_keyboard,
+    get_cancel_inline_keyboard,
 )
 from db.models import UserType, User as UserModel
 from filters import LimitLevel
@@ -28,11 +29,12 @@ async def send_superuser_msg(message: Message):
             "- مثال:\n"
             "<blockquote expandable>عنوان تست\nمتن پیام تستی که میتونه هر چند خط که تلگرام اجازه میده باشه.</blockquote>"
         ),
+        reply_markup=get_cancel_inline_keyboard(),
     )
     try:
         response: Message = await aiostep.wait_for(message.from_user.id, timeout=500)
         if response.text:
-            match = re.match(r"^(^.{1,60})\n([\s\S]*)$", response.text+"\n")
+            match = re.match(r"^(^.{1,60})\n([\s\S]*)$", response.text)
             if match:
                 msg_db.create(
                     title=match.group(1),
@@ -46,7 +48,9 @@ async def send_superuser_msg(message: Message):
                     "این ساختار متن مورد قبول نیست! (دوباره روی دکمه‌ی ارتباط با مدیر گروه بزنید)"
                 )
         else:
-            await message.answer("صرفا متن ارسال کنید! (دوباره روی دکمه‌ی ارتباط با مدیر گروه بزنید)")
+            await message.answer(
+                "صرفا متن ارسال کنید! (دوباره روی دکمه‌ی ارتباط با مدیر گروه بزنید)"
+            )
     except TimeoutError:
         await message.answer("You took too long to answer.\nwe canceled this process!")
     except Exception:
@@ -110,7 +114,10 @@ async def rulles(message: Message, user: UserModel):
 
 @router.message(F.text == "ارتباط با توسعه دهنده ⚠️")
 async def send_admin_msg(message: Message):
-    await message.answer("لطفا پیام خود را ارسال کنید: (فقط متن)")
+    await message.answer(
+        "لطفا پیام خود را ارسال کنید: (فقط متن)",
+        reply_markup=get_cancel_inline_keyboard(),
+    )
     try:
         response: Message = await aiostep.wait_for(message.from_user.id, timeout=300)
 
@@ -123,14 +130,19 @@ async def send_admin_msg(message: Message):
                     sender_id=response.from_user.id,
                     for_admin=False,
                 )
-
                 await message.answer("پیام شما با موفقیت ثبت شد.")
             else:
-                await message.answer(
-                    "این ساختار متن مورد قبول نیست! (دوباره روی دکمه‌ی ارتباط با توسعه دهنده بزنید)"
+                msg_db.create(
+                    title=None,
+                    text=response.text,
+                    sender_id=response.from_user.id,
+                    for_admin=False,
                 )
+                await message.answer("پیام شما با موفقیت ثبت شد.")
         else:
-            await message.answer("صرفا متن ارسال کنید! (دوباره روی دکمه‌ی ارتباط با توسعه دهنده بزنید)")
+            await message.answer(
+                "صرفا متن ارسال کنید! (دوباره روی دکمه‌ی ارتباط با توسعه دهنده بزنید)"
+            )
     except TimeoutError:
         await message.answer("You took too long to answer.\nwe canceled this process!")
     except Exception:
