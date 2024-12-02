@@ -98,12 +98,12 @@ async def send_notif(message: Message):
 
 @router.message(F.text == "گزارش عملکرد 📈")
 async def report(message: Message):
-    await message.answer(f"- تعداد کاربرها:{report_db.user_count()}")
-    msg ="- پر اولویت‌ترین عناوین:\n"
-    for i in report_db.get_top_starred_messages():
-        msg += f"{i.star*'⭐️'} {i.title}\n"
-    await message.answer(msg)
-    await message.answer(report_db.user_count(True))
+    await message.answer(f"◾️ تعداد کاربرها: {report_db.user_count()}")
+    # msg ="- پر اولویت‌ترین عناوین:\n"
+    # for i in report_db.get_top_starred_messages():
+    #     msg += f"{i.star*'⭐️'} {i.title}\n"
+    # await message.answer(msg)
+    # await message.answer(report_db.user_count(True))
 
 
 def register_messages(dp: Dispatcher):
