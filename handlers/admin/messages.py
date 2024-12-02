@@ -98,9 +98,9 @@ async def send_notif(message: Message):
 
 @router.message(F.text == "گزارش عملکرد 📈")
 async def report(message: Message):
-    await message.answer(report_db.user_count())
-    await message.answer(report_db.user_count(True))
-    await message.answer(report_db.get_top_starred_messages())
+    await message.answer(str(report_db.user_count()))
+    await message.answer(str(report_db.user_count(True)))
+    await message.answer(str(report_db.get_top_starred_messages()))
 
 
 def register_messages(dp: Dispatcher):
