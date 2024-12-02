@@ -8,7 +8,7 @@ load_dotenv()
 BOT_TOKEN = config("BOT_TOKEN")
 PORT = config("PORT", default=8080, cast=int)
 WEBHOOK_URL = config("WEBHOOK_URL")
-BOT_NAME = config("BOT_NAME", default="نسخه‌ی بدون نام", cast=str)
+BOT_NAME = config("BOT_NAME", default="سامانه یکپارچه پیشنهادها", cast=str)
 
 SQLALCHEMY_DATABASE_URL = config("SQLALCHEMY_DATABASE_URL")
 
@@ -17,7 +17,7 @@ DATE_TIME_FMT = config("DATE_TIME_FMT", cast=str, default="%c")
 
 PAGINATION = config("PAGINATION", default=5)
 
-RULES_MSG = config("RULES_MSG", default="Rules")
+RULES_MSG = config("RULES_MSG", default="...")
 
 USER_LEVEL = {
     0: config("DEVELOPER_NAME", default="توسعه دهنده"),

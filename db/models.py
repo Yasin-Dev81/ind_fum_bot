@@ -105,6 +105,16 @@ class User(Base):
         )
 
     @hybrid_property
+    def xname(self) -> str:
+        if self.username:
+            return f"@{self.username}"
+        return "Unknown"
+
+    @xname.expression
+    def xname(cls):
+        return func.coalesce(cls.username, "بدون عنوان")
+
+    @hybrid_property
     def is_superuser(self) -> str:
         return self.type == UserType.SUPERUSER
 
@@ -163,14 +173,13 @@ class Message(Base):
     @hybrid_property
     def tel_msg(self) -> str:
         return (
-            f"📌 {escape(self.title or 'بدون عنوان')}\n"
+            f"{escape(self.title or 'بدون عنوان')}\n"
             f"<blockquote expandable>{escape(self.caption)}</blockquote>"
         )
 
     @tel_msg.expression
     def tel_msg(cls):
         return func.concat(
-            "📌 ",
             func.coalesce(cls.title, "بدون عنوان"),
             "\n<blockquote expandable>",
             cls.caption,

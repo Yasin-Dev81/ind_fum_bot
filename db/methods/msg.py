@@ -201,6 +201,7 @@ def msg(pk: int) -> Message:
                 Message.datetime_modified,
                 User.name.label("sender_name"),
                 User.username,
+                User.xname,
                 User.is_superuser,
                 Star.star,
             )

@@ -21,7 +21,7 @@ async def start(message: Message, user: UserModel):
         await message.answer("لطفا نام خود را ارسال کنید:")
         try:
             response: Message = await aiostep.wait_for(
-                message.from_user.id, timeout=500
+                message.from_user.id, timeout=600
             )
 
             if response.text:

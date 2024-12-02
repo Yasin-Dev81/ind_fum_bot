@@ -56,7 +56,7 @@ async def search(message: Message):
         if response.text:
             msgs = msg_db.search(response.text)
 
-            await message.answer(
+            await response.answer(
                 "یک پیام انتخاب کنید ⬇️",
                 reply_markup=get_msg_list_inline_keyboard(
                     msgs, page=0, type="search", search_string=response.text

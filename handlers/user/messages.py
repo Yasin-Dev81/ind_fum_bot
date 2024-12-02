@@ -1,5 +1,6 @@
 from aiogram import Router, Dispatcher, F
 from aiogram.types import Message
+from persiantools.jdatetime import JalaliDateTime
 
 import re
 import aiostep
@@ -11,7 +12,7 @@ from keyboards import (
 )
 from db.models import UserType, User as UserModel
 from filters import LimitLevel
-from config import USER_LEVEL
+from config import USER_LEVEL, DATE_TIME_FMT, RULES_MSG
 
 
 router = Router(name="messages-router")
@@ -21,7 +22,12 @@ router.message.filter(LimitLevel(type=UserType.USER))
 @router.message(F.text == "ارتباط با مدیر گروه 🚀")
 async def send_superuser_msg(message: Message):
     await message.answer(
-        "لطفا پیام خود را ارسال کنید: (فقط متن)\nدر خط اول عنوان (حداکثر ۶۰ کارکتر) و در باقی خطوط پیام را بنویسید."
+        (
+            "لطفا پیام خود را بصورت متن ارسال کنید:\n"
+            "در خط اول عنوان (حداکثر ۶۰ کارکتر) و در باقی خطوط پیام را بنویسید.\n\n"
+            "- مثال:\n"
+            "<blockquote expandable>عنوان تست\nمتن پیام تستی که میتونه هر چند خط که تلگرام اجازه میده باشه.</blockquote>"
+        ),
     )
     try:
         response: Message = await aiostep.wait_for(message.from_user.id, timeout=500)
@@ -37,10 +43,10 @@ async def send_superuser_msg(message: Message):
                 await message.answer("پیام شما با موفقیت ثبت شد.")
             else:
                 await message.answer(
-                    "این ساختار متن مورد قبول نیست! (دوباره روی دکمه‌ی پاسخ بزنید)"
+                    "این ساختار متن مورد قبول نیست! (دوباره روی دکمه‌ی ارتباط با مدیر گروه بزنید)"
                 )
         else:
-            await message.answer("صرفا متن ارسال کنید! (دوباره روی دکمه بزنید)")
+            await message.answer("صرفا متن ارسال کنید! (دوباره روی دکمه‌ی ارتباط با مدیر گروه بزنید)")
     except TimeoutError:
         await message.answer("You took too long to answer.\nwe canceled this process!")
     except Exception:
@@ -91,7 +97,7 @@ async def info(message: Message, user: UserModel):
             f"🆔 #{user.id}\n"
             f"▫️ لول: {USER_LEVEL[user.type.value]}\n"
             f"◾️ نام مستعار: {user.nick_name or 'تعریف نشده!'}\n"
-            f"▫️ زمان استارت بات: {user.datetime_created}"
+            f"▫️ زمان استارت بات: {JalaliDateTime(user.datetime_created).strftime(DATE_TIME_FMT, locale='fa')}"
         ),
         reply_markup=get_set_notif_file_id_inline_keyboard(),
     )
@@ -99,14 +105,14 @@ async def info(message: Message, user: UserModel):
 
 @router.message(F.text == "قوانین 📝")
 async def rulles(message: Message, user: UserModel):
-    await message.answer("بچه‌ی خوبی باشین:)")
+    await message.answer(RULES_MSG)
 
 
 @router.message(F.text == "ارتباط با توسعه دهنده ⚠️")
 async def send_admin_msg(message: Message):
     await message.answer("لطفا پیام خود را ارسال کنید: (فقط متن)")
     try:
-        response: Message = await aiostep.wait_for(message.from_user.id, timeout=500)
+        response: Message = await aiostep.wait_for(message.from_user.id, timeout=300)
 
         if response.text:
             match = re.match(r"^(^.{1,60})\n([\s\S]*)$", response.text)
@@ -121,10 +127,10 @@ async def send_admin_msg(message: Message):
                 await message.answer("پیام شما با موفقیت ثبت شد.")
             else:
                 await message.answer(
-                    "این ساختار متن مورد قبول نیست! (دوباره روی دکمه‌ی پاسخ بزنید)"
+                    "این ساختار متن مورد قبول نیست! (دوباره روی دکمه‌ی ارتباط با توسعه دهنده بزنید)"
                 )
         else:
-            await message.answer("صرفا متن ارسال کنید! (دوباره روی دکمه بزنید)")
+            await message.answer("صرفا متن ارسال کنید! (دوباره روی دکمه‌ی ارتباط با توسعه دهنده بزنید)")
     except TimeoutError:
         await message.answer("You took too long to answer.\nwe canceled this process!")
     except Exception:
