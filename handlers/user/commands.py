@@ -8,7 +8,7 @@ import aiostep
 from keyboards import get_main_menu_keyboard
 from db.models import User as UserModel
 from db.methods import user_db
-from config import BOT_NAME
+from config import BOT_NAME, LEARN_VIDEO_URL
 
 
 router = Router(name="commands-router")
@@ -28,8 +28,13 @@ async def start(message: Message, user: UserModel):
                 user_db.set_name(user.id, response.text[:128])
 
                 await message.answer("نام شما با موفقیت ثبت شد ✅")
-                await message.answer(
-                    f"سلام {escape(response.text)}\n به بات {BOT_NAME} خوش اومدی 👋🏻",
+                await message.answer_video(
+                    video=LEARN_VIDEO_URL,
+                    caption=(
+                        f"سلام {escape(user.name)}\n به بات {BOT_NAME} خوش اومدی 👋🏻\n\n"
+                        "یه ویدیو برای نحوه‌ی استفاده از بات آماده کردیم، اگه دوست داشتی قبل از استفاده ویدیو رو ببین.\n"
+                        "راستی اگه موقع استفاده از بات به مشکلی برخوردی حتما بهم بگو 🙏"
+                    ),
                     reply_markup=get_main_menu_keyboard(user.type.value),
                 )
             else:
@@ -43,11 +48,16 @@ async def start(message: Message, user: UserModel):
             print(Exception)
             await message.answer("مشکلی پیش آمده است! لطفا دوباره تلاش کنید.")
     else:
-        await message.answer(
-            f"سلام {escape(user.name)}\n به بات {BOT_NAME} خوش اومدی 👋🏻",
+        await message.answer_video(
+            video=LEARN_VIDEO_URL,
+            caption=(
+                f"سلام {escape(user.name)}\n به بات {BOT_NAME} خوش اومدی 👋🏻\n\n"
+                "یه ویدیو برای نحوه‌ی استفاده از بات آماده کردیم، اگه دوست داشتی قبل از استفاده ویدیو رو ببین.\n"
+                "راستی اگه موقع استفاده از بات به مشکلی برخوردی حتما بهم بگو 🙏"
+            ),
             reply_markup=get_main_menu_keyboard(user.type.value),
         )
-    await message.answer("Powered by @MmdYasin02")
+    await message.answer("Powered by <span class='tg-spoiler'>@MmdYasin02</span>")
 
 
 def register_commands(dp: Dispatcher):

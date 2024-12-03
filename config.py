@@ -18,6 +18,7 @@ DATE_TIME_FMT = config("DATE_TIME_FMT", cast=str, default="%c")
 PAGINATION = config("PAGINATION", default=5)
 
 RULES_MSG = config("RULES_MSG", default="...")
+LEARN_VIDEO_URL = config("LEARN_VIDEO_URL", default=None)
 
 USER_LEVEL = {
     0: config("DEVELOPER_NAME", default="توسعه دهنده"),
