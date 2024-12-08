@@ -5,7 +5,7 @@ from html import escape
 
 import aiostep
 
-from keyboards import get_main_menu_keyboard
+from keyboards import get_main_menu_keyboard, get_cancel_inline_keyboard
 from db.models import User as UserModel
 from db.methods import user_db
 from config import BOT_NAME, LEARN_VIDEO_URL
@@ -18,7 +18,10 @@ router = Router(name="commands-router")
 @router.message(Command("start"))
 async def start(message: Message, user: UserModel):
     if not user.nick_name:
-        await message.answer("لطفا نام خود را ارسال کنید:")
+        await message.answer(
+            "در صورت تمایل می‌توانید یک نام مستعار برای خودتون تعیین کنید:",
+            reply_markup=get_cancel_inline_keyboard(cancel_name=True),
+        )
         try:
             response: Message = await aiostep.wait_for(
                 message.from_user.id, timeout=600

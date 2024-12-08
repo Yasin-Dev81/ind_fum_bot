@@ -11,9 +11,10 @@ from keyboards import (
     get_msg_list_inline_keyboard,
     get_msg_inline_keyboard,
     get_cancel_inline_keyboard,
+    get_main_menu_keyboard,
 )
 from db.methods import msg_db, user_db
-from config import DATE_TIME_FMT, STATUS_LEVEL
+from config import DATE_TIME_FMT, STATUS_LEVEL, LEARN_VIDEO_URL, BOT_NAME
 # from db.models import UserType
 # from filters import LimitLevel
 
@@ -25,6 +26,32 @@ router = Router(name="callbacks-router")
 @router.callback_query(F.data == "exit")
 async def exit(callback: CallbackQuery):
     await aiostep.unregister_steps(callback.from_user.id)
+    await callback.message.answer_video(
+        video=LEARN_VIDEO_URL,
+        caption=(
+            f"سلام دوست من\n به بات {BOT_NAME} خوش اومدی 👋🏻\n\n"
+            "یه ویدیو برای نحوه‌ی استفاده از بات آماده کردیم، اگه دوست داشتی قبل از استفاده ویدیو رو ببین.\n"
+            "راستی اگه موقع استفاده از بات به مشکلی برخوردی حتما بهم بگو 🙏"
+        ),
+        reply_markup=get_main_menu_keyboard(user.type.value),
+    )
+    await callback.message.answer("Powered by <span class='tg-spoiler'>@MmdYasin02</span>")
+    await callback.message.delete()
+
+
+@router.callback_query(F.data == "cancel_name")
+async def cancel_name(callback: CallbackQuery):
+    await aiostep.unregister_steps(callback.from_user.id)
+    await callback.message.answer_video(
+        video=LEARN_VIDEO_URL,
+        caption=(
+            f"سلام دوست من\n به بات {BOT_NAME} خوش اومدی 👋🏻\n\n"
+            "یه ویدیو برای نحوه‌ی استفاده از بات آماده کردیم، اگه دوست داشتی قبل از استفاده ویدیو رو ببین.\n"
+            "راستی اگه موقع استفاده از بات به مشکلی برخوردی حتما بهم بگو 🙏"
+        ),
+        reply_markup=get_main_menu_keyboard(3),
+    )
+    await callback.message.answer("Powered by <span class='tg-spoiler'>@MmdYasin02</span>")
     await callback.message.delete()
 
 

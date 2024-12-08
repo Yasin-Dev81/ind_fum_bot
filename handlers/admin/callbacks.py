@@ -123,7 +123,7 @@ async def list_user(callback: CallbackQuery, callback_data: UserListCB):
 async def user(callback: CallbackQuery, callback_data: MsgCB):
     user = user_db.read(callback_data.pk)
     await callback.message.answer(
-        f"🆔 #{callback_data.pk}\n👤 {escape(user.name)}\n💬 @{user.username}\n"
+        f"🆔 #{callback_data.pk}\n👤 {escape(user.name)}\n💬 {user.xname}\n"
         f"📅 {JalaliDateTime(user.datetime_created).strftime(DATE_TIME_FMT, locale='fa')}",
         reply_markup=get_user_inline_keyboard(callback_data.pk, user.type.value),
     )
