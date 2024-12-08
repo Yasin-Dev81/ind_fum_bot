@@ -9,6 +9,7 @@ BOT_TOKEN = config("BOT_TOKEN")
 PORT = config("PORT", default=8080, cast=int)
 WEBHOOK_URL = config("WEBHOOK_URL")
 BOT_NAME = config("BOT_NAME", default="سامانه یکپارچه پیشنهادها", cast=str)
+GITHUB_LINK = config("GITHUB_LINK", default="https://github.com/Yasin-Dev81/ind_fum_bot/", cast=str)
 
 SQLALCHEMY_DATABASE_URL = config("SQLALCHEMY_DATABASE_URL")
 

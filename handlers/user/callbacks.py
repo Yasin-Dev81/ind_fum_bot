@@ -4,7 +4,7 @@ from html import escape
 from persiantools.jdatetime import JalaliDateTime
 import aiostep
 import asyncio
-import re
+# import re
 
 from utils import MsgListCB, MsgCB
 from keyboards import (
@@ -12,6 +12,7 @@ from keyboards import (
     get_msg_inline_keyboard,
     get_cancel_inline_keyboard,
     get_main_menu_keyboard,
+    get_github_inline_keyboard,
 )
 from db.methods import msg_db, user_db
 from config import DATE_TIME_FMT, STATUS_LEVEL, LEARN_VIDEO_URL, BOT_NAME
@@ -26,16 +27,6 @@ router = Router(name="callbacks-router")
 @router.callback_query(F.data == "exit")
 async def exit(callback: CallbackQuery):
     await aiostep.unregister_steps(callback.from_user.id)
-    await callback.message.answer_video(
-        video=LEARN_VIDEO_URL,
-        caption=(
-            f"سلام دوست من\n به بات {BOT_NAME} خوش اومدی 👋🏻\n\n"
-            "یه ویدیو برای نحوه‌ی استفاده از بات آماده کردیم، اگه دوست داشتی قبل از استفاده ویدیو رو ببین.\n"
-            "راستی اگه موقع استفاده از بات به مشکلی برخوردی حتما بهم بگو 🙏"
-        ),
-        reply_markup=get_main_menu_keyboard(user.type.value),
-    )
-    await callback.message.answer("Powered by <span class='tg-spoiler'>@MmdYasin02</span>")
     await callback.message.delete()
 
 
@@ -51,7 +42,10 @@ async def cancel_name(callback: CallbackQuery):
         ),
         reply_markup=get_main_menu_keyboard(3),
     )
-    await callback.message.answer("Powered by <span class='tg-spoiler'>@MmdYasin02</span>")
+    await callback.message.answer(
+        "Powered by <span class='tg-spoiler'>@MmdYasin02</span>",
+        reply_markup=get_github_inline_keyboard(),
+    )
     await callback.message.delete()
 
 
@@ -130,23 +124,23 @@ async def reply(callback: CallbackQuery, callback_data: MsgCB):
     try:
         response: Message = await aiostep.wait_for(callback.from_user.id, timeout=500)
         if response.text:
-            match = re.match(r"^(^.{1,60})\n([\s\S]*)$", response.text + "\n")
-            if match:
-                msg_db.reply(
-                    title=match.group(1),
-                    text=match.group(2),
-                    sender_id=response.from_user.id,
-                    msg_id=callback_data.pk,
-                )
-                await callback.message.answer("پیام شما با موفقیت ثبت شد.")
-            else:
-                msg_db.reply(
-                    title=None,
-                    text=response.text,
-                    sender_id=response.from_user.id,
-                    msg_id=callback_data.pk,
-                )
-                await callback.message.answer("پیام شما با موفقیت ثبت شد.")
+            # match = re.match(r"^(^.{1,60})\n([\s\S]*)$", response.text + "\n")
+            # if match:
+            #     msg_db.reply(
+            #         title=match.group(1),
+            #         text=match.group(2),
+            #         sender_id=response.from_user.id,
+            #         msg_id=callback_data.pk,
+            #     )
+            #     await callback.message.answer("پیام شما با موفقیت ثبت شد.")
+            # else:
+            msg_db.reply(
+                title=None,
+                text=response.text,
+                sender_id=response.from_user.id,
+                msg_id=callback_data.pk,
+            )
+            await callback.message.answer("پیام شما با موفقیت ثبت شد.")
         else:
             await callback.message.answer(
                 "صرفا متن ارسال کنید! (دوباره روی دکمه‌ی پاسخ بزنید)"

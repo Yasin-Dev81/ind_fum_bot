@@ -5,7 +5,11 @@ from html import escape
 
 import aiostep
 
-from keyboards import get_main_menu_keyboard, get_cancel_inline_keyboard
+from keyboards import (
+    get_main_menu_keyboard,
+    get_cancel_inline_keyboard,
+    get_github_inline_keyboard,
+)
 from db.models import User as UserModel
 from db.methods import user_db
 from config import BOT_NAME, LEARN_VIDEO_URL
@@ -60,7 +64,10 @@ async def start(message: Message, user: UserModel):
             ),
             reply_markup=get_main_menu_keyboard(user.type.value),
         )
-    await message.answer("Powered by <span class='tg-spoiler'>@MmdYasin02</span>")
+    await message.answer(
+        "Powered by <span class='tg-spoiler'>@MmdYasin02</span>",
+        reply_markup=get_github_inline_keyboard(),
+    )
 
 
 def register_commands(dp: Dispatcher):
